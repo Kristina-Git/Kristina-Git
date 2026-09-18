@@ -1,0 +1,19 @@
+{
+  "name": "cayman-trade-order-system",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Trade order management system with immutable audit trails, designed around CIMA (Cayman Islands) regulatory themes",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "build:client": "npm run build --workspace=client",
+    "test:server": "npm run test --workspace=server",
+    "db:setup": "npm run db:setup --workspace=server"
+  },
+  "license": "UNLICENSED"
+}

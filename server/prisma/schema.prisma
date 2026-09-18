@@ -1,0 +1,126 @@
+// Prisma schema for the Cayman Islands (CIMA-aligned) Trade Order Management System.
+// Default datasource is SQLite for zero-config local/dev use; point DATABASE_URL at
+// PostgreSQL in production (Prisma's `postgresql` provider is a drop-in swap that also
+// unlocks native Prisma enums for the string-typed fields below, if desired).
+//
+// SQLite has no native enum type, so Role/OrderSide/OrderType/TimeInForce/OrderStatus are
+// stored as plain strings here and validated at the API boundary (zod) and in application
+// code against the union types in src/types.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         String // Role: CLIENT | DEALER | COMPLIANCE_OFFICER | ADMIN
+  // Client-specific compliance/KYC reference fields (not a full KYC engine).
+  clientCode   String?  @unique
+  jurisdiction String? // country of tax residence / incorporation, for CIMA client due-diligence records
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  ordersAsClient  Order[]      @relation("ClientOrders")
+  ordersCreatedBy Order[]      @relation("CreatedByUser")
+  orderEvents     OrderEvent[]
+  auditLogs       AuditLog[]
+
+  @@index([role])
+}
+
+model Order {
+  id          String @id @default(uuid())
+  orderNumber String @unique // human-readable regulatory reference, e.g. ORD-<timestamp>-<rand>
+  clientId    String
+  client      User   @relation("ClientOrders", fields: [clientId], references: [id])
+  createdById String // actor who entered the order (client self-service or dealer-assisted)
+  createdBy   User   @relation("CreatedByUser", fields: [createdById], references: [id])
+
+  instrumentSymbol String
+  instrumentName   String?
+  side             String // OrderSide: BUY | SELL
+  orderType        String // OrderType: MARKET | LIMIT | STOP
+  quantity         Float
+  limitPrice       Float? // required for LIMIT/STOP orders
+  currency         String @default("USD")
+  timeInForce      String @default("DAY") // TimeInForce: DAY | GTC | IOC | FOK
+
+  // Lifecycle designed for segregation of duties (maker-checker):
+  // CLIENT submits -> DEALER accepts/rejects -> (large orders) COMPLIANCE approves -> DEALER executes.
+  status           String @default("PENDING_REVIEW") // OrderStatus, see src/types.ts
+  rejectionReason  String?
+  complianceFlag   Boolean @default(false) // flagged for AML / best-execution review
+  complianceNotes  String?
+  executedPrice    Float?
+  executedQuantity Float?
+  executedAt       DateTime?
+
+  // Record-keeping: CIMA-supervised entities must retain business records (SIBA / AML
+  // Regulations) for a minimum retention period. We default to 7 years from creation and
+  // never hard-delete order records; see COMPLIANCE.md.
+  retentionUntil DateTime
+
+  version   Int      @default(1) // optimistic concurrency guard
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events OrderEvent[]
+
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Fine-grained lifecycle trail scoped to a single order (fast per-order history).
+model OrderEvent {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  fromStatus String? // OrderStatus
+  toStatus   String // OrderStatus
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id])
+  actorRole  String // Role
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// System-wide, append-only, hash-chained audit log. Every mutating action anywhere in the
+// system writes exactly one row here. Rows are never updated or deleted; integrity of the
+// whole history can be independently re-verified by walking the hash chain (see
+// src/audit/auditService.ts -> verifyChain).
+model AuditLog {
+  // sequence is the primary key (SQLite only supports AUTOINCREMENT on the primary key);
+  // `id` is a separate stable UUID used everywhere else so callers never depend on the
+  // integer sequence for identity, only for ordering.
+  sequence   Int    @id @default(autoincrement())
+  id         String @unique @default(uuid())
+  entityType String // e.g. "Order", "User", "Auth"
+  entityId   String
+  action     String // e.g. "ORDER_CREATED", "ORDER_EXECUTED", "LOGIN_SUCCESS"
+  actorId    String?
+  actor      User?   @relation(fields: [actorId], references: [id])
+  actorRole  String? // Role
+  ipAddress  String?
+  beforeState String? // JSON snapshot
+  afterState  String? // JSON snapshot
+  timestamp   DateTime @default(now())
+
+  dataHash String // sha256 of this entry's own content
+  prevHash String // hash of the previous entry (genesis = "0".repeat(64))
+  hash     String // sha256(prevHash + dataHash) - chains this entry to all prior history
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([timestamp])
+}
