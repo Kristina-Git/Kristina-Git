@@ -6,29 +6,36 @@ immutable, tamper-evident audit trail. It's designed around the regulatory theme
 (Cayman Islands Monetary Authority) applies to licensed securities investment business —
 see [`COMPLIANCE.md`](./COMPLIANCE.md) for the mapping and important legal caveats.
 
+Want a real, public URL instead of running this locally? See [`DEPLOYMENT.md`](./DEPLOYMENT.md)
+for a Railway walkthrough.
+
 ## Stack
 
-- **Server**: Node.js, TypeScript, Express, Prisma ORM, SQLite (swap to PostgreSQL for
-  production by changing one line in `server/prisma/schema.prisma`), JWT auth, zod validation,
-  TOTP-based MFA (`otplib` + `qrcode`).
+- **Server**: Node.js, TypeScript, Express, Prisma ORM, PostgreSQL, JWT auth, zod validation,
+  TOTP-based MFA (`otplib` + `qrcode`). In production it also serves the built React app
+  (single deployable service, one URL — see `server/src/app.ts`).
 - **Client**: React 18, TypeScript, Vite, React Router.
 - **Tests**: Vitest + Supertest (order lifecycle, RBAC, audit chain integrity, MFA flow).
 
 ## Project layout
 
 ```
-server/   Express API, Prisma schema/migrations, business logic, tests
-client/   React single-page app (client / dealer / compliance dashboards)
+server/         Express API, Prisma schema/migrations, business logic, tests
+client/         React single-page app (client / dealer / compliance dashboards)
+railway.json    Deployment config (see DEPLOYMENT.md)
 ```
 
 ## Quick start
+
+Needs a local PostgreSQL. Don't want to install it? `server/.env.example` has a one-line
+`docker run` command that starts one.
 
 ```bash
 npm install                      # installs both workspaces
 
 cd server
-cp .env.example .env
-npx prisma migrate deploy        # creates prisma/dev.db and applies migrations
+cp .env.example .env             # edit DATABASE_URL if your local Postgres differs
+npx prisma migrate deploy        # applies migrations
 npm run seed                     # seeds demo users (see below)
 npm run dev                      # http://localhost:4000
 

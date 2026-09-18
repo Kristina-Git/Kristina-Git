@@ -1,18 +1,18 @@
 // Prisma schema for the Cayman Islands (CIMA-aligned) Trade Order Management System.
-// Default datasource is SQLite for zero-config local/dev use; point DATABASE_URL at
-// PostgreSQL in production (Prisma's `postgresql` provider is a drop-in swap that also
-// unlocks native Prisma enums for the string-typed fields below, if desired).
+// PostgreSQL datasource — see README.md for local setup (a local Postgres or `docker run
+// postgres`) and DEPLOYMENT.md for hosted setup (Railway provisions DATABASE_URL for you).
 //
-// SQLite has no native enum type, so Role/OrderSide/OrderType/TimeInForce/OrderStatus are
-// stored as plain strings here and validated at the API boundary (zod) and in application
-// code against the union types in src/types.ts.
+// Role/OrderSide/OrderType/TimeInForce/OrderStatus are stored as plain strings rather than
+// native Postgres enums, and validated at the API boundary (zod) and in application code
+// against the union types in src/types.ts — this schema previously also ran on SQLite, which
+// has no enum type, and keeping strings avoids the two datasources diverging.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -111,9 +111,9 @@ model OrderEvent {
 // whole history can be independently re-verified by walking the hash chain (see
 // src/audit/auditService.ts -> verifyChain).
 model AuditLog {
-  // sequence is the primary key (SQLite only supports AUTOINCREMENT on the primary key);
-  // `id` is a separate stable UUID used everywhere else so callers never depend on the
-  // integer sequence for identity, only for ordering.
+  // sequence is the primary key (a Postgres SERIAL); `id` is a separate stable UUID used
+  // everywhere else so callers never depend on the integer sequence for identity, only for
+  // ordering.
   sequence   Int    @id @default(autoincrement())
   id         String @unique @default(uuid())
   entityType String // e.g. "Order", "User", "Auth"
