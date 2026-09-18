@@ -49,24 +49,40 @@ same login page, running for real instead of in a screenshot.
 
 ## 6. Create your first users
 
-There's no sign-up page (by design — order-entry accounts shouldn't be self-service). The only
-way to create accounts right now is the seed script, which creates demo accounts with a
-**publicly documented password** (`ChangeMe123!`, visible in this repo's `README.md`). That's
-fine to run once to confirm the deployment works, but:
-
-- **Do not leave the demo accounts active with real client data reachable.** Either change
-  their passwords immediately after confirming the deploy works, deactivate them
-  (`isActive: false` in the database), or delete them.
-- Real user creation currently means running `server/src/seed.ts`-style logic yourself (or
-  writing an admin "create user" endpoint, which doesn't exist yet) with real emails and
-  strong, unique passwords.
-
-To run the seed script against the deployed database, use Railway's **"Run a command"** /
-shell feature on the app service (exact label may vary by Railway's current UI) with:
+**Dealer/compliance/admin accounts** still need to go through the seed script, or you add them
+by hand for now (there's no "create staff account" UI yet — only client accounts have one).
+Run the seed script once via Railway's **"Run a command"** / shell feature on the app service
+(exact label may vary by Railway's current UI):
 
 ```
 npm run seed --workspace=server
 ```
+
+This creates demo accounts with a **publicly documented password** (`ChangeMe123!`, visible in
+this repo's `README.md`) — fine to confirm the deployment works, but:
+
+- **Do not leave the demo accounts active with real client data reachable.** Change their
+  passwords, deactivate them (`isActive: false`), or delete them once you've set up real staff
+  accounts.
+
+**Client accounts** have a real onboarding flow: once logged in as a dealer/compliance/admin,
+use the **"Clients"** page to create accounts one at a time or in bulk (paste a spreadsheet).
+See `README.md`'s "Client onboarding" section for details. Each new client gets a one-time
+invite link to set their own password — no passwords are ever emailed, even temporary ones.
+
+To have those invites emailed automatically instead of just shown in the UI for manual
+sharing, add SMTP variables to the app service (any provider works — Gmail app password,
+SendGrid, Postmark, Resend, etc.):
+
+| Variable | Value |
+| --- | --- |
+| `SMTP_HOST` | e.g. `smtp.sendgrid.net` |
+| `SMTP_PORT` | e.g. `587` |
+| `SMTP_USER` | your SMTP username/API key identifier |
+| `SMTP_PASS` | your SMTP password/API key |
+| `SMTP_FROM` | e.g. `Cayman Trade Order System <no-reply@yourdomain.com>` |
+
+Without these, nothing breaks — invite links are just shown in the UI instead of auto-emailed.
 
 ## Local development still works the same way
 

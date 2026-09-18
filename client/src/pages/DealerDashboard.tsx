@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { api, Order } from "../api";
+import { api, ClientAccount, Order } from "../api";
 import OrderForm from "../components/OrderForm";
 import OrderTable from "../components/OrderTable";
 import OrderDetail from "../components/OrderDetail";
 
 export default function DealerDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [clients, setClients] = useState<{ id: string; fullName: string; clientCode?: string }[]>([]);
+  const [clients, setClients] = useState<ClientAccount[]>([]);
   const [selected, setSelected] = useState<Order | null>(null);
   const [filter, setFilter] = useState<string>("");
 

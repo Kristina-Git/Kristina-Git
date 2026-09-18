@@ -127,8 +127,9 @@ mfaRouter.post("/disable", async (req, res) => {
   if (!user) return res.status(404).json({ error: "User not found" });
 
   // Step-up re-authentication: a live session token alone isn't enough to turn off a
-  // security control, in case the session itself is what's compromised.
-  if (!(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
+  // security control, in case the session itself is what's compromised. A user with a valid
+  // session always has a password set (login requires one), so this is never null in practice.
+  if (!user.passwordHash || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
     return res.status(401).json({ error: "Incorrect password" });
   }
 

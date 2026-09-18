@@ -19,7 +19,11 @@ datasource db {
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
-  passwordHash String
+  // Null until the user accepts their invite and sets their own password (see Invite below).
+  // We deliberately never generate a password on their behalf and transmit it -- an invite
+  // link that lets them set it themselves is standard practice; emailing a password (even a
+  // temporary one) is not.
+  passwordHash String?
   fullName     String
   role         String // Role: CLIENT | DEALER | COMPLIANCE_OFFICER | ADMIN
   // Client-specific compliance/KYC reference fields (not a full KYC engine).
@@ -39,8 +43,28 @@ model User {
   ordersCreatedBy Order[]      @relation("CreatedByUser")
   orderEvents     OrderEvent[]
   auditLogs       AuditLog[]
+  invite          Invite?
 
   @@index([role])
+}
+
+// A one-time link letting a newly-created account set its own password. Created alongside a
+// User whose passwordHash starts out null; the account has no usable password until this is
+// redeemed. tokenHash stores sha256(raw token) -- the raw token only ever exists in the URL
+// handed to the invitee (in the API response for manual sharing, or in the invite email if
+// SMTP is configured), never persisted or logged.
+model Invite {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id])
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  emailedAt   DateTime? // set if an automated invite email was actually sent
+  createdAt   DateTime  @default(now())
+
+  @@index([expiresAt])
 }
 
 model Order {

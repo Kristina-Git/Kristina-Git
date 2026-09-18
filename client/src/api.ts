@@ -54,6 +54,27 @@ export interface OrderEvent {
   actor: { id: string; fullName: string; role: Role };
 }
 
+export interface ClientAccount {
+  id: string;
+  fullName: string;
+  email: string;
+  clientCode?: string | null;
+  jurisdiction?: string | null;
+  isActive: boolean;
+  activated: boolean;
+  createdAt: string;
+}
+
+export interface InviteResult {
+  userId?: string;
+  email: string;
+  fullName?: string;
+  inviteUrl?: string;
+  emailed?: boolean;
+  emailWarning?: string;
+  error?: string; // only set when account creation itself failed (bulk import row failures)
+}
+
 export interface AuditEntry {
   id: string;
   sequence: number;
@@ -124,7 +145,18 @@ export const api = {
   mfaDisable: (password: string) =>
     request<{ mfaEnabled: false }>("/auth/mfa/disable", { method: "POST", body: JSON.stringify({ password }) }),
   me: () => request<CurrentUser>("/users/me"),
-  clients: () => request<{ id: string; fullName: string; email: string; clientCode?: string }[]>("/users/clients"),
+  clients: (includeInactive = false) =>
+    request<ClientAccount[]>(`/users/clients${includeInactive ? "?includeInactive=true" : ""}`),
+  createClient: (data: { fullName: string; email: string; clientCode?: string; jurisdiction?: string }) =>
+    request<InviteResult>("/users/clients", { method: "POST", body: JSON.stringify(data) }),
+  bulkImportClients: (csv: string) =>
+    request<{ created: InviteResult[]; rowErrors: { row: number; error: string }[] }>("/users/clients/bulk", {
+      method: "POST",
+      body: JSON.stringify({ csv }),
+    }),
+  checkInvite: (token: string) => request<{ email: string; fullName: string }>(`/auth/invite/${token}`),
+  acceptInvite: (token: string, password: string) =>
+    request<{ email: string }>("/auth/accept-invite", { method: "POST", body: JSON.stringify({ token, password }) }),
 
   listOrders: (params: Record<string, string> = {}) => {
     const qs = new URLSearchParams(params).toString();

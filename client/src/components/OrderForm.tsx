@@ -4,7 +4,7 @@ import { api } from "../api";
 interface ClientOption {
   id: string;
   fullName: string;
-  clientCode?: string;
+  clientCode?: string | null;
 }
 
 export default function OrderForm({

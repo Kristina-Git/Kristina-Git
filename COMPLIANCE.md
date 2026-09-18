@@ -121,6 +121,26 @@ identity and jurisdiction of residence/incorporation against your firm's KYC/CDD
 integrate with (or build) proper customer due diligence, sanctions screening, and ongoing
 monitoring — none of which this system attempts to provide.
 
+### 9. Client account provisioning without transmitting passwords
+
+Dealer/compliance/admin users create client accounts (individually or in bulk) with no
+password set. The client instead gets a single-use, time-limited (7-day) invite link to set
+their own password; the account can't be logged into until they do. No password, temporary or
+otherwise, is ever generated on a client's behalf and sent to them.
+
+**Why:** emailing (or otherwise transmitting) a password — even a "temporary, change it on
+first login" one — means the password existed in plaintext somewhere outside the user's control
+(an email, a chat message) before the account owner ever set it themselves. An invite link that
+lets them set their own password from the start avoids that exposure window entirely; this is
+standard practice for account provisioning generally, not a Cayman-specific requirement, but it
+supports the same underlying goal as the access-control point in §4 — that only the intended
+person ever has usable credentials for their account.
+
+Bulk import is restricted to compliance/admin (not dealers) since it's a less individually
+reviewed action than creating one account at a time; every invite created (individually or via
+bulk import), and every invite redemption, is audit-logged (`CLIENT_INVITED`,
+`CLIENT_INVITE_ACCEPTED`).
+
 ## What this system does *not* do
 
 - It does not perform KYC/CDD, sanctions/PEP screening, or ongoing AML transaction monitoring

@@ -67,8 +67,9 @@ npm test
 Tests cover: the full order lifecycle (submission → acceptance → execution), the mandatory
 compliance-approval path for large/market orders, four-eyes (maker-checker) enforcement,
 role-based access restrictions, retention-date stamping, the two-step MFA login/enrollment
-flow, and — critically — hash-chain audit log integrity, including a test that directly
-tampers with a historical row and confirms `verifyChain()` detects it.
+flow, the client invite flow (creation, single-use redemption, bulk CSV/TSV import, role
+restrictions), and — critically — hash-chain audit log integrity, including a test that
+directly tampers with a historical row and confirms `verifyChain()` detects it.
 
 ## How it works
 
@@ -135,6 +136,25 @@ carries no role, and is rejected by every other authenticated endpoint — it's 
 completing the MFA challenge. Enrollment, enable, disable, and every MFA login attempt are
 audit-logged. MFA is currently opt-in, not enforced for any role — see `COMPLIANCE.md` §7.
 
+### Client onboarding
+
+Dealers, compliance officers, and admins can create client accounts from the **"Clients"** page:
+
+- **Single client**: a small form (name, email, optional client code/jurisdiction). Creates
+  the account with no password and returns a one-time invite link.
+- **Bulk import** (compliance/admin only): paste rows from a spreadsheet — a CSV export, or a
+  straight copy-paste out of Excel/Sheets (tab-separated is auto-detected) — with a header row
+  of `fullName`, `email`, and optionally `clientCode`, `jurisdiction`. Creates up to 500
+  accounts at once, each with its own invite link.
+
+New accounts never get an emailed password — that's deliberately not how this works, even for
+a one-time temporary password. Instead each invite link (`/invite/<token>`, single-use, expires
+in 7 days) lets the client set their own password. If SMTP is configured (see
+`server/.env.example`), the invite is emailed automatically; otherwise the link is shown in the
+UI for whoever created the account to share manually (however they'd like — email, WhatsApp,
+etc.). An account with no password yet can't log in; attempting to shows a clear "not activated"
+message rather than "invalid credentials".
+
 ### Roles
 
 | Role                 | Can do                                                                 |
@@ -146,6 +166,14 @@ audit-logged. MFA is currently opt-in, not enforced for any role — see `COMPLI
 
 ## Configuration
 
-See `server/.env.example`. Notably `COMPLIANCE_APPROVAL_THRESHOLD` (default `100000`) — the
-notional value at or above which an order requires compliance sign-off before execution; any
-`MARKET` order (notional unknown until fill) always requires it too.
+See `server/.env.example`. Notably:
+
+- `COMPLIANCE_APPROVAL_THRESHOLD` (default `100000`) — the notional value at or above which an
+  order requires compliance sign-off before execution; any `MARKET` order (notional unknown
+  until fill) always requires it too.
+- `APP_BASE_URL` — only needed if the server can't correctly infer its own public URL (running
+  the client/server as separate local dev processes, or a custom domain/CDN in front of the
+  deployment). Affects invite links.
+- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` — optional, enables
+  automated invite emails. Everything works without these; invite links just have to be shared
+  manually instead of auto-emailed.

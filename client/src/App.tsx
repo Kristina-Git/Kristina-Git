@@ -5,6 +5,8 @@ import ClientDashboard from "./pages/ClientDashboard";
 import DealerDashboard from "./pages/DealerDashboard";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
 import SecuritySettings from "./pages/SecuritySettings";
+import ClientsPage from "./pages/ClientsPage";
+import AcceptInvite from "./pages/AcceptInvite";
 
 function homeFor(role: string | undefined) {
   if (role === "CLIENT") return "/client";
@@ -28,6 +30,9 @@ function NavBar() {
       <nav className="navbar-links">
         <Link to={homeFor(user.role)}>Dashboard</Link>
         {(user.role === "COMPLIANCE_OFFICER" || user.role === "ADMIN") && <Link to="/compliance/audit">Audit Trail</Link>}
+        {(user.role === "DEALER" || user.role === "COMPLIANCE_OFFICER" || user.role === "ADMIN") && (
+          <Link to="/clients">Clients</Link>
+        )}
         <Link to="/security">
           Security {!user.mfaEnabled && <span className="flag-pill">2FA off</span>}
         </Link>
@@ -59,6 +64,7 @@ export default function App() {
       <main className="app-main">
         <Routes>
           <Route path="/login" element={user ? <Navigate to={homeFor(user.role)} replace /> : <Login />} />
+          <Route path="/invite/:token" element={<AcceptInvite />} />
           <Route
             path="/client"
             element={
@@ -96,6 +102,14 @@ export default function App() {
             element={
               <RequireRole roles={["CLIENT", "DEALER", "COMPLIANCE_OFFICER", "ADMIN"]}>
                 <SecuritySettings />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/clients"
+            element={
+              <RequireRole roles={["DEALER", "COMPLIANCE_OFFICER", "ADMIN"]}>
+                <ClientsPage />
               </RequireRole>
             }
           />
