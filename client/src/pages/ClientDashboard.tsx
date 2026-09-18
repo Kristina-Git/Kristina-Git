@@ -31,7 +31,10 @@ export default function ClientDashboard() {
       <div>
         <OrderForm onCreated={refresh} />
         <section>
-          <h3>My orders</h3>
+          <div className="section-header">
+            <h3>My orders</h3>
+            <button onClick={() => api.downloadOrdersCsv()}>Export CSV</button>
+          </div>
           <OrderTable orders={orders} onSelect={select} selectedId={selected?.id} />
         </section>
       </div>

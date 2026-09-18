@@ -221,6 +221,7 @@ export default function ClientsPage() {
                 <th>Code</th>
                 <th>Jurisdiction</th>
                 <th>Status</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -244,6 +245,11 @@ export default function ClientsPage() {
                         Pending activation
                       </span>
                     )}
+                  </td>
+                  <td>
+                    <button type="button" onClick={() => api.downloadOrdersCsv({ clientId: c.id })}>
+                      Export trades
+                    </button>
                   </td>
                 </tr>
               ))}

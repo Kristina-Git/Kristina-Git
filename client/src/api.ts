@@ -103,6 +103,22 @@ export function getToken() {
   return authToken;
 }
 
+async function downloadCsv(path: string, fallbackFilename: string): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+  });
+  if (!res.ok) throw new Error("Export failed");
+  const disposition = res.headers.get("content-disposition") ?? "";
+  const filenameMatch = disposition.match(/filename="([^"]+)"/);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filenameMatch?.[1] ?? fallbackFilename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -196,17 +212,14 @@ export const api = {
     request<{ valid: boolean; totalEntries: number; brokenAtSequence: number | null; reason: string | null }>(
       "/audit/verify"
     ),
-  downloadAuditCsv: async () => {
-    const res = await fetch(`${BASE}/audit/export.csv`, {
-      headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
-    });
-    if (!res.ok) throw new Error("Failed to export audit trail");
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "audit-trail-export.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+  downloadAuditCsv: () => downloadCsv("/audit/export.csv", "audit-trail-export.csv"),
+
+  // Per-order trade blotter -- pass clientId to get one client's trade activity (a CLIENT
+  // caller always gets their own regardless of what's passed). Omit clientId for everyone's.
+  downloadOrdersCsv: (params: { clientId?: string; status?: string; instrumentSymbol?: string } = {}) => {
+    const qs = new URLSearchParams(
+      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined)) as Record<string, string>
+    ).toString();
+    return downloadCsv(`/orders/export.csv${qs ? `?${qs}` : ""}`, "trade-report.csv");
   },
 };

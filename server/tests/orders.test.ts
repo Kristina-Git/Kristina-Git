@@ -168,4 +168,34 @@ describe("order lifecycle", () => {
     const years = retention.getFullYear() - created.getFullYear();
     expect(years).toBe(7);
   });
+
+  it("exports a per-client trade CSV, scoped so a client can only ever get their own", async () => {
+    const { user: alice, token: aliceToken } = await makeUser("CLIENT", "alice-export");
+    const { token: bobToken } = await makeUser("CLIENT", "bob-export");
+    const { token: dealerToken } = await makeUser("DEALER", "dealer-export");
+
+    await request(app)
+      .post("/orders")
+      .set(authHeader(aliceToken))
+      .send({ instrumentSymbol: "SPY", side: "BUY", orderType: "MARKET", quantity: 1, currency: "USD", timeInForce: "DAY" });
+
+    // Alice exporting herself: fine, and passing someone else's clientId is silently ignored.
+    const aliceExport = await request(app)
+      .get(`/orders/export.csv?clientId=${alice.id}`)
+      .set(authHeader(aliceToken));
+    expect(aliceExport.status).toBe(200);
+    expect(aliceExport.headers["content-type"]).toContain("text/csv");
+    expect(aliceExport.text).toContain("SPY");
+
+    const bobExport = await request(app).get("/orders/export.csv").set(authHeader(bobToken));
+    expect(bobExport.status).toBe(200);
+    expect(bobExport.text).not.toContain("SPY");
+
+    // A dealer can pull one specific client's trade activity.
+    const dealerExport = await request(app)
+      .get(`/orders/export.csv?clientId=${alice.id}`)
+      .set(authHeader(dealerToken));
+    expect(dealerExport.status).toBe(200);
+    expect(dealerExport.text).toContain("SPY");
+  });
 });

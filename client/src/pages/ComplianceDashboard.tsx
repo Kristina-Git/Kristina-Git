@@ -31,14 +31,17 @@ function OrdersTab() {
         <section>
           <div className="section-header">
             <h3>Compliance queue</h3>
-            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-              <option value="">All statuses</option>
-              <option value="PENDING_COMPLIANCE_APPROVAL">Pending compliance approval</option>
-              <option value="PENDING_REVIEW">Pending review</option>
-              <option value="EXECUTED">Executed</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
+            <div className="audit-actions">
+              <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                <option value="">All statuses</option>
+                <option value="PENDING_COMPLIANCE_APPROVAL">Pending compliance approval</option>
+                <option value="PENDING_REVIEW">Pending review</option>
+                <option value="EXECUTED">Executed</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+              <button onClick={() => api.downloadOrdersCsv(filter ? { status: filter } : {})}>Export CSV</button>
+            </div>
           </div>
           <OrderTable orders={orders} onSelect={select} selectedId={selected?.id} showClient />
         </section>
