@@ -16,6 +16,16 @@ depend on which of these regimes apply to it and on CIMA's rules, statements of 
 any conditions attached to its specific licence — none of which this system can determine for
 you.
 
+**Before this system touches real client orders: confirm your SIBA licensing position.**
+Taking client trade instructions and passing them on for execution (including relaying them to
+a custodian) is the kind of activity SIBA's "dealing" and "arranging" categories are built
+around — CIMA's default position is that in-scope activity requires either a full Securities
+Investment Business Licence or qualification as an exempt "Registered Person" under SIBA
+Schedule 4. See [CIMA's own guidance](https://www.cima.ky/securities-licensing-authorisation-requirements)
+and get this confirmed by a Cayman law firm with regulatory practice before going live — this is
+a licensing question, not a software question, and this codebase has no way to answer it for
+you.
+
 ## What this system implements, and why
 
 ### 1. Immutable, tamper-evident audit trail
@@ -76,7 +86,33 @@ years as a conservative default, not a verified statutory figure for every scena
 different record types (e.g. transaction records vs. CDD/KYC records) can carry different
 minimums.
 
-### 6. Client identification fields
+### 6. Custodian reconciliation reference
+
+When a dealer marks an order `EXECUTED`, they can record the executing custodian's name and
+trade confirmation reference alongside the price/quantity actually filled.
+
+**Why:** execution itself happens outside this system, on the custodian's own platform. Capturing
+the custodian's reference at the point of execution creates a durable link between "what our
+records say happened" and "what the custodian's own confirmation says happened" — useful for
+reconciliation and for demonstrating accurate record-keeping if the two are ever compared.
+
+### 7. Multi-factor authentication (TOTP)
+
+Any user can enroll a standard TOTP authenticator app (Google Authenticator, Authy, 1Password,
+etc.) via Security settings. Once enabled, login becomes two steps: password, then a 6-digit
+code. Disabling MFA requires re-entering the account password (step-up re-authentication).
+Enrollment, enable, disable, and every MFA login attempt (success or failure) are all written to
+the audit trail.
+
+**Why:** password-only authentication for dealer/compliance/admin accounts — the accounts that
+can accept, approve, and execute real trade orders — is a single point of failure. This is
+implemented as an available control, not yet a mandatory one: nothing currently blocks a
+DEALER/COMPLIANCE_OFFICER/ADMIN account from operating without it. **Firm policy should decide
+whether to make it mandatory for those roles**, and enforcement would need to be added at the
+login layer (reject login for a privileged role with MFA not yet enabled, rather than just
+offering it) once that policy is set.
+
+### 8. Client identification fields
 
 `User.clientCode` and `User.jurisdiction` provide a place to reference a client's due-diligence
 identity and jurisdiction of residence/incorporation against your firm's KYC/CDD system.
@@ -96,8 +132,8 @@ monitoring — none of which this system attempts to provide.
   handling real client data should review session/token handling, transport security (TLS
   termination, HSTS), secrets management, and infrastructure hardening as part of a proper
   security review, separately from this document.
-- Passwords use `bcryptjs`; production deployments should also add MFA for dealer/compliance/
-  admin accounts, which this demo does not implement.
+- Passwords use `bcryptjs`. MFA is implemented (see §7) but **opt-in, not enforced** — deciding
+  to make it mandatory for privileged roles, and building that enforcement, is still open.
 
 ## Before relying on this in production
 

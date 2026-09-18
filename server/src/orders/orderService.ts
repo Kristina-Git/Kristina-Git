@@ -250,23 +250,32 @@ export async function approveCompliance(actor: AuthUser, orderId: string, notes:
   });
 }
 
-export async function executeOrder(
-  actor: AuthUser,
-  orderId: string,
-  executedPrice: number,
-  executedQuantity: number,
-  ipAddress: string
-) {
+export interface ExecuteOrderInput {
+  executedPrice: number;
+  executedQuantity: number;
+  custodianName?: string;
+  custodianReference?: string;
+}
+
+export async function executeOrder(actor: AuthUser, orderId: string, input: ExecuteOrderInput, ipAddress: string) {
   if (actor.role !== "DEALER" && actor.role !== "ADMIN") throw forbidden("Only dealers may execute orders");
 
   return transition(actor, orderId, ipAddress, ["ACCEPTED", "COMPLIANCE_APPROVED"], (order) => {
-    if (executedQuantity > order.quantity) {
+    if (input.executedQuantity > order.quantity) {
       throw badRequest("executedQuantity cannot exceed the ordered quantity");
     }
     return {
       toStatus: "EXECUTED",
-      data: { executedPrice, executedQuantity, executedAt: new Date() },
-      reason: `Executed ${executedQuantity} @ ${executedPrice}`,
+      data: {
+        executedPrice: input.executedPrice,
+        executedQuantity: input.executedQuantity,
+        executedAt: new Date(),
+        custodianName: input.custodianName,
+        custodianReference: input.custodianReference,
+      },
+      reason: `Executed ${input.executedQuantity} @ ${input.executedPrice}${
+        input.custodianName ? ` via ${input.custodianName}` : ""
+      }${input.custodianReference ? ` (ref ${input.custodianReference})` : ""}`,
       action: "ORDER_EXECUTED",
     };
   });

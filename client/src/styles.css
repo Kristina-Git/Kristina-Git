@@ -104,6 +104,17 @@ label {
 }
 .demo-hint ul { margin: 6px 0 0; padding-left: 18px; }
 
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+}
+.link-button:hover { text-decoration: underline; }
+
 .error-banner {
   background: rgba(229, 72, 77, 0.15);
   border: 1px solid var(--danger);
@@ -200,6 +211,7 @@ label {
 .inline-form {
   display: flex;
   align-items: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
   background: var(--panel-2);
   padding: 10px;

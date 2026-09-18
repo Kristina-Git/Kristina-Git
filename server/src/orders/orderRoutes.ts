@@ -98,13 +98,7 @@ orderRouter.post("/:id/execute", requireRole("DEALER", "ADMIN"), async (req, res
   const parsed = executeOrderSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
   try {
-    const order = await executeOrder(
-      req.user!,
-      req.params.id,
-      parsed.data.executedPrice,
-      parsed.data.executedQuantity,
-      clientIp(req)
-    );
+    const order = await executeOrder(req.user!, req.params.id, parsed.data, clientIp(req));
     res.json(order);
   } catch (err) {
     handle(res, err);

@@ -12,6 +12,8 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
   const [complianceNotes, setComplianceNotes] = useState("");
   const [execPrice, setExecPrice] = useState(order.limitPrice ? String(order.limitPrice) : "");
   const [execQty, setExecQty] = useState(String(order.quantity));
+  const [custodianName, setCustodianName] = useState("");
+  const [custodianReference, setCustodianReference] = useState("");
   const [showExecute, setShowExecute] = useState(false);
   const [flagNotes, setFlagNotes] = useState("");
   const [showFlag, setShowFlag] = useState(false);
@@ -60,6 +62,15 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
             <dt>Executed</dt>
             <dd>
               {order.executedQuantity} @ {order.executedPrice} on {new Date(order.executedAt).toLocaleString()}
+            </dd>
+          </>
+        )}
+        {order.custodianName && (
+          <>
+            <dt>Custodian</dt>
+            <dd>
+              {order.custodianName}
+              {order.custodianReference ? ` — ref ${order.custodianReference}` : ""}
             </dd>
           </>
         )}
@@ -155,12 +166,34 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
             Executed quantity
             <input value={execQty} onChange={(e) => setExecQty(e.target.value)} type="number" step="any" />
           </label>
+          <label>
+            Custodian
+            <input
+              value={custodianName}
+              onChange={(e) => setCustodianName(e.target.value)}
+              placeholder="e.g. Apex Custody Ltd"
+            />
+          </label>
+          <label>
+            Custodian confirmation ref
+            <input
+              value={custodianReference}
+              onChange={(e) => setCustodianReference(e.target.value)}
+              placeholder="e.g. TCN-88213"
+            />
+          </label>
           <button
             disabled={busy || !execPrice || !execQty}
             onClick={() =>
-              run(() => api.executeOrder(order.id, Number(execPrice), Number(execQty))).then(() =>
-                setShowExecute(false)
-              )
+              run(() =>
+                api.executeOrder(
+                  order.id,
+                  Number(execPrice),
+                  Number(execQty),
+                  custodianName || undefined,
+                  custodianReference || undefined
+                )
+              ).then(() => setShowExecute(false))
             }
           >
             Confirm execution

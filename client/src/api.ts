@@ -6,6 +6,14 @@ export interface CurrentUser {
   fullName: string;
   role: Role;
   clientCode?: string | null;
+  mfaEnabled?: boolean;
+}
+
+export interface LoginResult {
+  token?: string;
+  user?: CurrentUser;
+  mfaRequired?: true;
+  preAuthToken?: string;
 }
 
 export interface Order {
@@ -28,6 +36,8 @@ export interface Order {
   executedPrice?: number | null;
   executedQuantity?: number | null;
   executedAt?: string | null;
+  custodianName?: string | null;
+  custodianReference?: string | null;
   retentionUntil: string;
   createdAt: string;
   updatedAt: string;
@@ -98,10 +108,21 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   login: (email: string, password: string) =>
-    request<{ token: string; user: CurrentUser }>("/auth/login", {
+    request<LoginResult>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  verifyMfa: (preAuthToken: string, code: string) =>
+    request<{ token: string; user: CurrentUser }>("/auth/mfa/verify", {
+      method: "POST",
+      body: JSON.stringify({ preAuthToken, code }),
+    }),
+  mfaSetup: () =>
+    request<{ secret: string; otpauthUri: string; qrCodeDataUrl: string }>("/auth/mfa/setup", { method: "POST" }),
+  mfaEnable: (code: string) =>
+    request<{ mfaEnabled: true }>("/auth/mfa/enable", { method: "POST", body: JSON.stringify({ code }) }),
+  mfaDisable: (password: string) =>
+    request<{ mfaEnabled: false }>("/auth/mfa/disable", { method: "POST", body: JSON.stringify({ password }) }),
   me: () => request<CurrentUser>("/users/me"),
   clients: () => request<{ id: string; fullName: string; email: string; clientCode?: string }[]>("/users/clients"),
 
@@ -117,10 +138,16 @@ export const api = {
     request<Order>(`/orders/${id}/reject`, { method: "POST", body: JSON.stringify({ reason }) }),
   complianceApprove: (id: string, notes?: string) =>
     request<Order>(`/orders/${id}/compliance-approve`, { method: "POST", body: JSON.stringify({ notes }) }),
-  executeOrder: (id: string, executedPrice: number, executedQuantity: number) =>
+  executeOrder: (
+    id: string,
+    executedPrice: number,
+    executedQuantity: number,
+    custodianName?: string,
+    custodianReference?: string
+  ) =>
     request<Order>(`/orders/${id}/execute`, {
       method: "POST",
-      body: JSON.stringify({ executedPrice, executedQuantity }),
+      body: JSON.stringify({ executedPrice, executedQuantity, custodianName, custodianReference }),
     }),
   cancelOrder: (id: string, reason?: string) =>
     request<Order>(`/orders/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),

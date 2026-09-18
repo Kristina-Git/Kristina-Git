@@ -18,7 +18,7 @@ userRouter.get("/clients", requireRole("DEALER", "COMPLIANCE_OFFICER", "ADMIN"),
 userRouter.get("/me", async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    select: { id: true, email: true, fullName: true, role: true, clientCode: true, jurisdiction: true },
+    select: { id: true, email: true, fullName: true, role: true, clientCode: true, jurisdiction: true, mfaEnabled: true },
   });
   res.json(user);
 });

@@ -28,6 +28,13 @@ model User {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 
+  // TOTP-based MFA. mfaSecret is set (pending) as soon as setup is requested but mfaEnabled
+  // only flips to true once the user proves possession by submitting a valid code — see
+  // src/auth/mfaService.ts. Recommended (and, per firm policy, may be made mandatory) for
+  // DEALER / COMPLIANCE_OFFICER / ADMIN accounts.
+  mfaSecret  String?
+  mfaEnabled Boolean @default(false)
+
   ordersAsClient  Order[]      @relation("ClientOrders")
   ordersCreatedBy Order[]      @relation("CreatedByUser")
   orderEvents     OrderEvent[]
@@ -62,6 +69,10 @@ model Order {
   executedPrice    Float?
   executedQuantity Float?
   executedAt       DateTime?
+  // Actual execution happens outside this system (on the custodian's own platform); these
+  // fields tie our internal record to the custodian's trade confirmation for reconciliation.
+  custodianName        String?
+  custodianReference   String?
 
   // Record-keeping: CIMA-supervised entities must retain business records (SIBA / AML
   // Regulations) for a minimum retention period. We default to 7 years from creation and

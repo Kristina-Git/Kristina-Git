@@ -9,9 +9,10 @@ see [`COMPLIANCE.md`](./COMPLIANCE.md) for the mapping and important legal cavea
 ## Stack
 
 - **Server**: Node.js, TypeScript, Express, Prisma ORM, SQLite (swap to PostgreSQL for
-  production by changing one line in `server/prisma/schema.prisma`), JWT auth, zod validation.
+  production by changing one line in `server/prisma/schema.prisma`), JWT auth, zod validation,
+  TOTP-based MFA (`otplib` + `qrcode`).
 - **Client**: React 18, TypeScript, Vite, React Router.
-- **Tests**: Vitest + Supertest (order lifecycle, RBAC, audit chain integrity).
+- **Tests**: Vitest + Supertest (order lifecycle, RBAC, audit chain integrity, MFA flow).
 
 ## Project layout
 
@@ -58,9 +59,9 @@ npm test
 
 Tests cover: the full order lifecycle (submission → acceptance → execution), the mandatory
 compliance-approval path for large/market orders, four-eyes (maker-checker) enforcement,
-role-based access restrictions, retention-date stamping, and — critically — hash-chain audit
-log integrity, including a test that directly tampers with a historical row and confirms
-`verifyChain()` detects it.
+role-based access restrictions, retention-date stamping, the two-step MFA login/enrollment
+flow, and — critically — hash-chain audit log integrity, including a test that directly
+tampers with a historical row and confirms `verifyChain()` detects it.
 
 ## How it works
 
@@ -92,6 +93,11 @@ ACCEPTED                          PENDING_COMPLIANCE_APPROVAL
 Any non-terminal state can also move to CANCELLED (client, on their own order; or dealer/compliance).
 ```
 
+Actual execution happens outside this system, on the custodian's own trading platform — the
+"execute" step here is the dealer recording what the custodian filled (price, quantity, and
+optionally the custodian's name + trade confirmation reference) once it's done, closing the
+loop between the client's instruction and the custodian's own record.
+
 Every transition writes both a per-order `OrderEvent` (fast lifecycle history shown in the UI)
 and a system-wide, hash-chained `AuditLog` entry (see below) in the *same database transaction*
 as the state change — so a mutation can never happen without being audited.
@@ -111,6 +117,16 @@ as the state change — so a mutation can never happen without being audited.
 - `GET /audit` supports filtering (entity, actor, action, date range) and pagination;
   `GET /audit/export.csv` produces a downloadable export for a regulatory inspection or
   internal review.
+
+### Multi-factor authentication
+
+Any account can enroll TOTP-based MFA from the "Security" page (scan the QR code with any
+standard authenticator app). Once enabled, `POST /auth/login` returns `{ mfaRequired: true,
+preAuthToken }` instead of a session token; the client then calls `POST /auth/mfa/verify` with
+that token and a 6-digit code to get a real session. The pre-auth token is short-lived (5 min),
+carries no role, and is rejected by every other authenticated endpoint — it's only good for
+completing the MFA challenge. Enrollment, enable, disable, and every MFA login attempt are
+audit-logged. MFA is currently opt-in, not enforced for any role — see `COMPLIANCE.md` §7.
 
 ### Roles
 

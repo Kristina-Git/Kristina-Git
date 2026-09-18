@@ -28,6 +28,10 @@ export const complianceDecisionSchema = z.object({
 export const executeOrderSchema = z.object({
   executedPrice: z.number().positive(),
   executedQuantity: z.number().positive(),
+  // Execution happens on the custodian's own platform, outside this system; these tie the
+  // internal record to the custodian's trade confirmation for reconciliation.
+  custodianName: z.string().min(1).max(200).optional(),
+  custodianReference: z.string().min(1).max(200).optional(),
 });
 
 export const cancelOrderSchema = z.object({

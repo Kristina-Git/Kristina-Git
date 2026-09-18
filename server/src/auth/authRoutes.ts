@@ -2,9 +2,10 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../db";
-import { clientIp, signToken } from "../middleware/auth";
+import { clientIp, signPreAuthToken, signToken } from "../middleware/auth";
 import { appendAuditEntry } from "../audit/auditService";
 import { Role } from "../types";
+import { mfaRouter } from "./mfaRoutes";
 
 export const authRouter = Router();
 
@@ -33,6 +34,18 @@ authRouter.post("/login", async (req, res) => {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
+  if (user.mfaEnabled) {
+    await appendAuditEntry(prisma, {
+      entityType: "Auth",
+      entityId: user.id,
+      action: "LOGIN_PASSWORD_VERIFIED_MFA_PENDING",
+      actorId: user.id,
+      actorRole: user.role as Role,
+      ipAddress: clientIp(req),
+    });
+    return res.json({ mfaRequired: true, preAuthToken: signPreAuthToken({ id: user.id, email: user.email }) });
+  }
+
   await appendAuditEntry(prisma, {
     entityType: "Auth",
     entityId: user.id,
@@ -51,6 +64,9 @@ authRouter.post("/login", async (req, res) => {
       fullName: user.fullName,
       role: user.role,
       clientCode: user.clientCode,
+      mfaEnabled: user.mfaEnabled,
     },
   });
 });
+
+authRouter.use("/mfa", mfaRouter);

@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import ClientDashboard from "./pages/ClientDashboard";
 import DealerDashboard from "./pages/DealerDashboard";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
+import SecuritySettings from "./pages/SecuritySettings";
 
 function homeFor(role: string | undefined) {
   if (role === "CLIENT") return "/client";
@@ -27,6 +28,9 @@ function NavBar() {
       <nav className="navbar-links">
         <Link to={homeFor(user.role)}>Dashboard</Link>
         {(user.role === "COMPLIANCE_OFFICER" || user.role === "ADMIN") && <Link to="/compliance/audit">Audit Trail</Link>}
+        <Link to="/security">
+          Security {!user.mfaEnabled && <span className="flag-pill">2FA off</span>}
+        </Link>
       </nav>
       <div className="navbar-user">
         <span>
@@ -84,6 +88,14 @@ export default function App() {
             element={
               <RequireRole roles={["COMPLIANCE_OFFICER", "ADMIN"]}>
                 <ComplianceDashboard tab="audit" />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/security"
+            element={
+              <RequireRole roles={["CLIENT", "DEALER", "COMPLIANCE_OFFICER", "ADMIN"]}>
+                <SecuritySettings />
               </RequireRole>
             }
           />
