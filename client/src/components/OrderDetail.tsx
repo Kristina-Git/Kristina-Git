@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 import { api, Order } from "../api";
 import { useAuth } from "../context/AuthContext";
 import StatusBadge from "./StatusBadge";
@@ -17,6 +17,10 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
   const [showExecute, setShowExecute] = useState(false);
   const [flagNotes, setFlagNotes] = useState("");
   const [showFlag, setShowFlag] = useState(false);
+  const [agreedFeePercent, setAgreedFeePercent] = useState("");
+  const [showFeeRequest, setShowFeeRequest] = useState(false);
+  const [disputeNote, setDisputeNote] = useState("");
+  const [showDispute, setShowDispute] = useState(false);
 
   if (!user) return null;
   const role = user.role;
@@ -86,6 +90,30 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
             <dd>{order.complianceNotes}</dd>
           </>
         )}
+        {order.feeConfirmationStatus !== "NONE" && (
+          <>
+            <dt>Fee confirmation</dt>
+            <dd>
+              Agreed fee {order.agreedFeePercent}% —{" "}
+              <span
+                className="status-badge"
+                style={
+                  {
+                    "--badge-color":
+                      order.feeConfirmationStatus === "CONFIRMED"
+                        ? "#127a3b"
+                        : order.feeConfirmationStatus === "DISPUTED"
+                          ? "#a11f1f"
+                          : "#9a6b00",
+                  } as CSSProperties
+                }
+              >
+                {order.feeConfirmationStatus}
+              </span>
+              {order.feeConfirmationNote && ` — "${order.feeConfirmationNote}"`}
+            </dd>
+          </>
+        )}
       </dl>
 
       {error && <div className="error-banner">{error}</div>}
@@ -124,6 +152,24 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
           <button disabled={busy} onClick={() => setShowFlag((v) => !v)}>
             Flag for review
           </button>
+        )}
+        {role === "COMPLIANCE_OFFICER" && order.status === "EXECUTED" && order.feeConfirmationStatus !== "PENDING" && (
+          <button disabled={busy} onClick={() => setShowFeeRequest((v) => !v)}>
+            {order.feeConfirmationStatus === "NONE" ? "Request fee confirmation" : "Re-request fee confirmation"}
+          </button>
+        )}
+        {role === "CLIENT" && order.clientId === user.id && order.feeConfirmationStatus === "PENDING" && (
+          <>
+            <button
+              disabled={busy}
+              onClick={() => run(() => api.respondToFeeConfirmation(order.id, true))}
+            >
+              Confirm {order.agreedFeePercent}% fee
+            </button>
+            <button disabled={busy} onClick={() => setShowDispute((v) => !v)}>
+              Dispute fee
+            </button>
+          </>
         )}
       </div>
 
@@ -217,6 +263,54 @@ export default function OrderDetail({ order, onChanged }: { order: Order; onChan
             }
           >
             Confirm flag
+          </button>
+        </div>
+      )}
+
+      {showFeeRequest && (
+        <div className="inline-form">
+          <label>
+            Agreed fee (%)
+            <input
+              value={agreedFeePercent}
+              onChange={(e) => setAgreedFeePercent(e.target.value)}
+              type="number"
+              min="0"
+              max="100"
+              step="any"
+              placeholder="e.g. 5"
+            />
+          </label>
+          <button
+            disabled={busy || !agreedFeePercent}
+            onClick={() =>
+              run(() => api.requestFeeConfirmation(order.id, Number(agreedFeePercent))).then(() => {
+                setShowFeeRequest(false);
+                setAgreedFeePercent("");
+              })
+            }
+          >
+            Send to client
+          </button>
+        </div>
+      )}
+
+      {showDispute && (
+        <div className="inline-form">
+          <label>
+            Reason for dispute
+            <input value={disputeNote} onChange={(e) => setDisputeNote(e.target.value)} />
+          </label>
+          <button
+            disabled={busy || !disputeNote}
+            onClick={() =>
+              run(() => api.respondToFeeConfirmation(order.id, false, disputeNote)).then(() => {
+                setShowDispute(false);
+                setDisputeNote("");
+              })
+            }
+          >
+            Submit dispute
           </button>
         </div>
       )}

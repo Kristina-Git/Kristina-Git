@@ -356,3 +356,95 @@ export async function flagOrder(actor: AuthUser, orderId: string, notes: string,
     return updated;
   });
 }
+
+/** Compliance requests that the client confirm the fee charged on a specific executed order
+ * -- e.g. responding to an external auditor sampling transactions. Only compliance/admin can
+ * request it, and only on an already-executed order (there's nothing to confirm otherwise). */
+export async function requestFeeConfirmation(
+  actor: AuthUser,
+  orderId: string,
+  agreedFeePercent: number,
+  ipAddress: string
+) {
+  if (actor.role !== "COMPLIANCE_OFFICER" && actor.role !== "ADMIN") {
+    throw forbidden("Only compliance officers may request fee confirmation");
+  }
+  return prisma.$transaction(async (tx) => {
+    const order = await loadOrderOrThrow(tx, orderId);
+    if (order.status !== "EXECUTED") {
+      throw conflict("Fee confirmation can only be requested on an executed order");
+    }
+
+    const updated = await tx.order.update({
+      where: { id: order.id },
+      data: {
+        agreedFeePercent,
+        feeConfirmationStatus: "PENDING",
+        feeConfirmationRequestedAt: new Date(),
+        feeConfirmationNote: null,
+        feeConfirmationRespondedAt: null,
+        version: { increment: 1 },
+      },
+    });
+
+    await appendAuditEntry(tx, {
+      entityType: "Order",
+      entityId: order.id,
+      action: "FEE_CONFIRMATION_REQUESTED",
+      actorId: actor.id,
+      actorRole: actor.role,
+      ipAddress,
+      before: order,
+      after: updated,
+    });
+
+    return updated;
+  });
+}
+
+/** Only the order's own client can respond -- that's what gives this evidentiary value for an
+ * auditor: it's the client's own authenticated confirmation, not staff attesting on their
+ * behalf, recorded in the same hash-chained audit trail as everything else. */
+export async function respondToFeeConfirmation(
+  actor: AuthUser,
+  orderId: string,
+  confirmed: boolean,
+  note: string | undefined,
+  ipAddress: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const order = await loadOrderOrThrow(tx, orderId);
+    if (actor.role !== "CLIENT" || order.clientId !== actor.id) {
+      throw forbidden("Only the client this order belongs to can respond to a fee confirmation request");
+    }
+    if (order.feeConfirmationStatus !== "PENDING") {
+      throw conflict("There is no pending fee confirmation request on this order");
+    }
+    if (!confirmed && !note) {
+      throw badRequest("A note is required when disputing the fee");
+    }
+
+    const updated = await tx.order.update({
+      where: { id: order.id },
+      data: {
+        feeConfirmationStatus: confirmed ? "CONFIRMED" : "DISPUTED",
+        feeConfirmationNote: note,
+        feeConfirmationRespondedAt: new Date(),
+        version: { increment: 1 },
+      },
+    });
+
+    await appendAuditEntry(tx, {
+      entityType: "Order",
+      entityId: order.id,
+      action: confirmed ? "FEE_CONFIRMED" : "FEE_DISPUTED",
+      actorId: actor.id,
+      actorRole: actor.role,
+      ipAddress,
+      before: order,
+      after: updated,
+    });
+
+    return updated;
+  });
+}

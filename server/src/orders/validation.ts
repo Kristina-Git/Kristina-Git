@@ -41,3 +41,12 @@ export const cancelOrderSchema = z.object({
 export const flagOrderSchema = z.object({
   notes: z.string().min(1).max(2000),
 });
+
+export const requestFeeConfirmationSchema = z.object({
+  agreedFeePercent: z.number().min(0).max(100),
+});
+
+export const feeConfirmationResponseSchema = z.object({
+  confirmed: z.boolean(),
+  note: z.string().max(2000).optional(),
+});

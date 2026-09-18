@@ -38,6 +38,11 @@ export interface Order {
   executedAt?: string | null;
   custodianName?: string | null;
   custodianReference?: string | null;
+  agreedFeePercent?: number | null;
+  feeConfirmationStatus: "NONE" | "PENDING" | "CONFIRMED" | "DISPUTED";
+  feeConfirmationNote?: string | null;
+  feeConfirmationRequestedAt?: string | null;
+  feeConfirmationRespondedAt?: string | null;
   retentionUntil: string;
   createdAt: string;
   updatedAt: string;
@@ -201,6 +206,16 @@ export const api = {
     request<Order>(`/orders/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
   flagOrder: (id: string, notes: string) =>
     request<Order>(`/orders/${id}/flag`, { method: "POST", body: JSON.stringify({ notes }) }),
+  requestFeeConfirmation: (id: string, agreedFeePercent: number) =>
+    request<Order>(`/orders/${id}/request-fee-confirmation`, {
+      method: "POST",
+      body: JSON.stringify({ agreedFeePercent }),
+    }),
+  respondToFeeConfirmation: (id: string, confirmed: boolean, note?: string) =>
+    request<Order>(`/orders/${id}/fee-confirmation-response`, {
+      method: "POST",
+      body: JSON.stringify({ confirmed, note }),
+    }),
 
   auditLog: (params: Record<string, string> = {}) => {
     const qs = new URLSearchParams(params).toString();

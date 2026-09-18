@@ -68,8 +68,9 @@ Tests cover: the full order lifecycle (submission → acceptance → execution),
 compliance-approval path for large/market orders, four-eyes (maker-checker) enforcement,
 role-based access restrictions, retention-date stamping, the two-step MFA login/enrollment
 flow, the client invite flow (creation, single-use redemption, bulk CSV/TSV import, role
-restrictions), and — critically — hash-chain audit log integrity, including a test that
-directly tampers with a historical row and confirms `verifyChain()` detects it.
+restrictions), the external audit fee confirmation flow (request/confirm/dispute, role and
+ownership restrictions), and — critically — hash-chain audit log integrity, including a test
+that directly tampers with a historical row and confirms `verifyChain()` detects it.
 
 ## How it works
 
@@ -154,6 +155,17 @@ in 7 days) lets the client set their own password. If SMTP is configured (see
 UI for whoever created the account to share manually (however they'd like — email, WhatsApp,
 etc.). An account with no password yet can't log in; attempting to shows a clear "not activated"
 message rather than "invalid credentials".
+
+### External audit fee confirmation
+
+For sampling exercises (e.g. an annual audit pulling a set of transactions to verify), compliance
+can request that a client confirm the fee charged on a specific executed order:
+`POST /orders/:id/request-fee-confirmation` (compliance/admin, executed orders only) records the
+agreed percentage and flags it pending. The order's own client sees it on their dashboard and
+responds via `POST /orders/:id/fee-confirmation-response` — confirm, or dispute with a required
+note. The response is written into the hash-chained audit trail, tied to their authenticated
+login — stronger evidence for an auditor than an emailed reply. `GET /orders/export.csv` includes
+the agreed fee and confirmation status/timestamp as columns for handing a sampled set to auditors.
 
 ### Roles
 

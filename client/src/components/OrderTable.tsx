@@ -44,6 +44,7 @@ export default function OrderTable({
             <td>
               <StatusBadge status={o.status} />
               {o.complianceFlag && <span className="flag-pill">Flagged</span>}
+              {o.feeConfirmationStatus === "PENDING" && <span className="flag-pill">Fee confirmation needed</span>}
             </td>
             <td>{new Date(o.createdAt).toLocaleString()}</td>
             <td>

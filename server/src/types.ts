@@ -26,3 +26,6 @@ export const ORDER_STATUSES = [
   "EXPIRED",
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const FEE_CONFIRMATION_STATUSES = ["NONE", "PENDING", "CONFIRMED", "DISPUTED"] as const;
+export type FeeConfirmationStatus = (typeof FEE_CONFIRMATION_STATUSES)[number];

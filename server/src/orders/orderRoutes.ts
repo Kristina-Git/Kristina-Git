@@ -6,8 +6,10 @@ import {
   complianceDecisionSchema,
   createOrderSchema,
   executeOrderSchema,
+  feeConfirmationResponseSchema,
   flagOrderSchema,
   rejectOrderSchema,
+  requestFeeConfirmationSchema,
 } from "./validation";
 import {
   acceptOrder,
@@ -19,6 +21,8 @@ import {
   getOrder,
   listOrders,
   rejectOrder,
+  requestFeeConfirmation,
+  respondToFeeConfirmation,
 } from "./orderService";
 import { OrderError } from "./errors";
 
@@ -85,6 +89,9 @@ orderRouter.get("/export.csv", async (req, res) => {
     "custodianReference",
     "rejectionReason",
     "complianceFlag",
+    "agreedFeePercent",
+    "feeConfirmationStatus",
+    "feeConfirmationRespondedAt",
     "createdAt",
     "retentionUntil",
   ];
@@ -108,6 +115,9 @@ orderRouter.get("/export.csv", async (req, res) => {
       o.custodianReference ?? "",
       o.rejectionReason ?? "",
       o.complianceFlag,
+      o.agreedFeePercent ?? "",
+      o.feeConfirmationStatus,
+      o.feeConfirmationRespondedAt?.toISOString() ?? "",
       o.createdAt.toISOString(),
       o.retentionUntil.toISOString(),
     ]
@@ -188,6 +198,38 @@ orderRouter.post("/:id/flag", requireRole("COMPLIANCE_OFFICER", "ADMIN"), async 
   if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
   try {
     const order = await flagOrder(req.user!, req.params.id, parsed.data.notes, clientIp(req));
+    res.json(order);
+  } catch (err) {
+    handle(res, err);
+  }
+});
+
+orderRouter.post(
+  "/:id/request-fee-confirmation",
+  requireRole("COMPLIANCE_OFFICER", "ADMIN"),
+  async (req, res) => {
+    const parsed = requestFeeConfirmationSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
+    try {
+      const order = await requestFeeConfirmation(req.user!, req.params.id, parsed.data.agreedFeePercent, clientIp(req));
+      res.json(order);
+    } catch (err) {
+      handle(res, err);
+    }
+  }
+);
+
+orderRouter.post("/:id/fee-confirmation-response", requireRole("CLIENT"), async (req, res) => {
+  const parsed = feeConfirmationResponseSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
+  try {
+    const order = await respondToFeeConfirmation(
+      req.user!,
+      req.params.id,
+      parsed.data.confirmed,
+      parsed.data.note,
+      clientIp(req)
+    );
     res.json(order);
   } catch (err) {
     handle(res, err);

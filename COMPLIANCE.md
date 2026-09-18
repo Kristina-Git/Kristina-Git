@@ -141,6 +141,29 @@ reviewed action than creating one account at a time; every invite created (indiv
 bulk import), and every invite redemption, is audit-logged (`CLIENT_INVITED`,
 `CLIENT_INVITE_ACCEPTED`).
 
+### 10. External audit fee confirmation
+
+An external auditor sampling transactions (e.g. as part of an annual audit) can be sent, in
+substance, "please confirm the fee charged on this trade was correct." This system implements
+that as a digital, client-authenticated confirmation rather than an email exchange: a
+compliance officer records the agreed fee percentage on a specific executed order and marks it
+pending; the order's own client (and only that client, authenticated) sees it on their
+dashboard and confirms or disputes it (a dispute requires a note explaining why); their
+response, exactly as given, is written into the hash-chained audit trail alongside everything
+else.
+
+**Why:** an emailed reply is comparatively weak audit evidence — it can be altered, forwarded,
+or spoofed, and there's no independent way to prove when it was sent or that it came from the
+actual client. A confirmation recorded here is tied to an authenticated login, timestamped, and
+covered by the same tamper-evidence (`GET /audit/verify`) as every other record in the system —
+stronger evidence to provide an auditor than an email thread, and it can be pulled in bulk via
+`GET /orders/export.csv` (includes `agreedFeePercent`, `feeConfirmationStatus`, and the response
+timestamp as columns) rather than compiled by hand from a mailbox.
+
+This is a confirmation *mechanism*, not a substitute for actually agreeing fees correctly with
+clients in the first place, and it doesn't validate that the percentage a compliance officer
+enters is itself correct — that's still a human judgment call before requesting confirmation.
+
 ## What this system does *not* do
 
 - It does not perform KYC/CDD, sanctions/PEP screening, or ongoing AML transaction monitoring

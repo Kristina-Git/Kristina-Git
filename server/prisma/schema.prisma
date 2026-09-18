@@ -98,6 +98,16 @@ model Order {
   custodianName        String?
   custodianReference   String?
 
+  // External audit confirmation (e.g. an auditor sampling transactions and asking the client
+  // to confirm the fee charged was correct). Compliance sets agreedFeePercent and requests
+  // confirmation on an executed order; the client -- not staff -- confirms or disputes it,
+  // which is what gives this real evidentiary value for an auditor. NONE = never requested.
+  agreedFeePercent            Float?
+  feeConfirmationStatus       String  @default("NONE") // NONE | PENDING | CONFIRMED | DISPUTED
+  feeConfirmationNote         String? // set by the client if they dispute
+  feeConfirmationRequestedAt  DateTime?
+  feeConfirmationRespondedAt  DateTime?
+
   // Record-keeping: CIMA-supervised entities must retain business records (SIBA / AML
   // Regulations) for a minimum retention period. We default to 7 years from creation and
   // never hard-delete order records; see COMPLIANCE.md.
