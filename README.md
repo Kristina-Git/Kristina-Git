@@ -1,5 +1,8 @@
 # Cayman Trade Order System
 
+**© 2026 Kristina Gliguroska. All rights reserved.** This software is proprietary and may not
+be used, copied, or distributed without prior written authorization — see [`LICENSE`](./LICENSE).
+
 A trade order management platform where clients submit trade orders, dealers and compliance
 officers action them through a segregated-duties workflow, and every action is recorded in an
 immutable, tamper-evident audit trail. It's designed around the regulatory themes CIMA
@@ -189,3 +192,8 @@ See `server/.env.example`. Notably:
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` — optional, enables
   automated invite emails. Everything works without these; invite links just have to be shared
   manually instead of auto-emailed.
+
+## License
+
+Proprietary — © 2026 Kristina Gliguroska. All rights reserved. See [`LICENSE`](./LICENSE). Not
+open source; use, copying, or distribution requires prior written authorization.
