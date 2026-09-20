@@ -47,6 +47,15 @@ function NavBar() {
   );
 }
 
+function Footer() {
+  return (
+    <footer className="app-footer">
+      Demo system — not for production use with real client funds or data. © {new Date().getFullYear()} Kristina
+      Gliguroska. All rights reserved. No use, copying, or distribution without prior written authorization.
+    </footer>
+  );
+}
+
 function RequireRole({ roles, children }: { roles: string[]; children: JSX.Element }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="loading">Loading…</div>;
@@ -116,6 +125,7 @@ export default function App() {
           <Route path="*" element={<Navigate to={loading ? "/login" : homeFor(user?.role)} replace />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }

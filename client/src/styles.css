@@ -78,6 +78,15 @@ label {
 
 .app-main { padding: 24px; flex: 1; }
 
+.app-footer {
+  padding: 14px 24px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+
 .login-page {
   display: flex;
   align-items: center;
