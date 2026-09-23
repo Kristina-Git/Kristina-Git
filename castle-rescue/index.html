@@ -191,11 +191,11 @@
     <div id="menu" class="overlay">
       <div class="panel" id="scrTitle">
         <h2 class="logo">Castle Rescue!</h2>
-        <p class="sub">The Silly Knights locked Queen Mama and Queen Kristina in the tallest tower. Brave Lian and Uncle Gosel are on the way!</p>
+        <p class="sub">The Silly Knights locked Queen Mama and Queen Kristina in the tallest tower. Lian and Uncle Gosel battle to see who saves them, and the loser gets turned into a frog!</p>
         <p class="byline">A story illustrated by Lian</p>
         <div class="row">
-          <button class="btn green" type="button" data-go="scrPick">Save the Queens!</button>
-          <button class="btn sky" type="button" data-go="scrDuel">Pillow Duel</button>
+          <button class="btn green" type="button" data-go="scrBattle">Battle for the Queens!</button>
+          <button class="btn sky" type="button" data-go="scrPick">Team Up vs the Knights</button>
         </div>
         <div class="row">
           <button class="btn small" type="button" id="drawingBtn">Hang Lian's drawings in the castle</button>
@@ -205,23 +205,24 @@
       </div>
 
       <div class="panel" id="scrPick" hidden>
-        <h2 class="logo" style="font-size:clamp(24px,5cqw,52px)">Who is playing?</h2>
+        <h2 class="logo" style="font-size:clamp(24px,5cqw,52px)">Team Up!</h2>
+        <p class="sub">Bonus story: Lian and Uncle Gosel work together against the Silly Knights. Who is playing?</p>
         <div class="cards">
           <button class="card-btn" type="button" data-rescue="lian"><canvas class="portrait" data-who="lian" width="240" height="240"></canvas><b>Lian</b><span>Mighty ROAR</span></button>
-          <button class="card-btn" type="button" data-rescue="gosel"><canvas class="portrait" data-who="gosel" width="240" height="240"></canvas><b>Uncle Gosel</b><span>Super Smile</span></button>
+          <button class="card-btn" type="button" data-rescue="gosel"><canvas class="portrait" data-who="gosel" width="240" height="240"></canvas><b>Uncle Gosel</b><span>Sunny Shine</span></button>
           <button class="card-btn" type="button" data-rescue="both"><canvas class="portrait" data-who="both" width="240" height="240"></canvas><b>Both of us!</b><span>2 players</span></button>
         </div>
         <p class="note">Playing alone? Your hero gets a computer helper.</p>
         <button class="btn small" type="button" data-go="scrTitle">Back</button>
       </div>
 
-      <div class="panel" id="scrDuel" hidden>
-        <h2 class="logo" style="font-size:clamp(24px,5cqw,52px)">Pillow Duel!</h2>
-        <p class="sub">Lian and Uncle Gosel have a friendly pillow fight in the throne room. Win two rounds to be the Pillow Champion.</p>
+      <div class="panel" id="scrBattle" hidden>
+        <h2 class="logo" style="font-size:clamp(24px,5cqw,52px)">Battle for the Queens!</h2>
+        <p class="sub">Lian and Uncle Gosel fight through the castle. Win two rounds to save the queens. Lose, and it's frog time!</p>
         <div class="cards">
-          <button class="card-btn" type="button" data-duel="lian"><canvas class="portrait" data-who="lian" width="240" height="240"></canvas><b>I'm Lian</b><span>vs computer</span></button>
-          <button class="card-btn" type="button" data-duel="gosel"><canvas class="portrait" data-who="gosel" width="240" height="240"></canvas><b>I'm Uncle Gosel</b><span>vs computer</span></button>
-          <button class="card-btn" type="button" data-duel="pvp"><canvas class="portrait" data-who="both" width="240" height="240"></canvas><b>2 players</b><span>Lian vs Gosel</span></button>
+          <button class="card-btn" type="button" data-battle="lian"><canvas class="portrait" data-who="lian" width="240" height="240"></canvas><b>I'm Lian</b><span>vs computer Gosel</span></button>
+          <button class="card-btn" type="button" data-battle="gosel"><canvas class="portrait" data-who="gosel" width="240" height="240"></canvas><b>I'm Uncle Gosel</b><span>vs computer Lian</span></button>
+          <button class="card-btn" type="button" data-battle="pvp"><canvas class="portrait" data-who="both" width="240" height="240"></canvas><b>2 players</b><span>Lian vs Gosel</span></button>
         </div>
         <button class="btn small" type="button" data-go="scrTitle">Back</button>
       </div>
@@ -242,6 +243,7 @@
         <div class="story-foot">
           <div class="dots" id="storyDots"></div>
           <div class="row">
+            <button class="btn small" type="button" id="altBtn" hidden>Back to the start</button>
             <button class="btn small" type="button" id="readBtn">Read it to me</button>
             <button class="btn green" type="button" id="nextBtn">Next</button>
           </div>
@@ -283,8 +285,8 @@ const sign = v => v < 0 ? -1 : 1;
 
 const INK = '#2b1d1a';
 const C = {
-  lianSkin: '#dfa981', lianHair: '#26170f', lianCurl: '#4a2e1f', lianShirt: '#1d6b48', shorts: '#a3a8b0',
-  goselSkin: '#b27a52', goselHair: '#22160e', braidTip: '#8a5a32', goselShirt: '#eef4c2', jeans: '#3d5f93',
+  lianSkin: '#e4b08a', lianHair: '#26170f', lianCurl: '#4a2e1f', lianShirt: '#1d6b48', shorts: '#a3a8b0',
+  goselSkin: '#c9976c', goselHair: '#3b2a1c', goselCurl: '#7a5236', goselShirt: '#2f4fb0', goselStripe: '#7fa2ee', jeans: '#2f3a52',
   pillow: '#8fd0f2', foam: '#ff8a2a', steel: '#c3ccd6', steelD: '#8a95a3', gold: '#f2b632', mouth: '#7a1f2b'
 };
 const CONFETTI = ['#ffc53d', '#ff6fa8', '#7fd36b', '#8fd0f2', '#c79be6', '#ff8a2a'];
@@ -363,10 +365,39 @@ function pillow(w, h) {
 }
 function shoe(x, y, col = '#f4f4f4', stripe = '#2f6fd6') { ell(x + 4, y, 11, 6, col, 0, 2.5); line(x, y - 1, x + 8, y - 1, 2.5, stripe); }
 
+function lianFace(hx, hy, roar) {
+  const cx = hx + 3;
+  ell(cx - 13, hy + 7, 5.5, 3.5, 'rgba(235,110,110,.5)'); ell(cx + 14, hy + 7, 5.5, 3.5, 'rgba(235,110,110,.5)');
+  // fierce "V" eyebrows
+  line(cx - 15, hy - 15, cx - 3, hy - 8, 3.8, C.lianHair); line(cx + 16, hy - 15, cx + 4, hy - 8, 3.8, C.lianHair);
+  // scrunched, squinty eyes
+  ctx.strokeStyle = INK; ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx - 14, hy - 3); ctx.quadraticCurveTo(cx - 9, hy - 7.5, cx - 3, hy - 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + 15, hy - 3); ctx.quadraticCurveTo(cx + 10, hy - 7.5, cx + 4, hy - 2); ctx.stroke();
+  ell(cx - 8.5, hy - 3.6, 2.8, 2, INK); ell(cx + 9.5, hy - 3.6, 2.8, 2, INK);
+  line(cx - 13, hy + 1, cx - 6, hy + 1.8, 1.6, 'rgba(43,29,26,.55)'); line(cx + 13, hy + 1, cx + 6, hy + 1.8, 1.6, 'rgba(43,29,26,.55)');
+  // wrinkled-up nose
+  line(cx - 2, hy - 5, cx - 1, hy - 1, 1.6, 'rgba(43,29,26,.6)'); line(cx + 3, hy - 5, cx + 2, hy - 1, 1.6, 'rgba(43,29,26,.6)');
+  ctx.beginPath(); ctx.arc(cx + 0.5, hy + 3.5, 3.4, 0.15, Math.PI - 0.15); ctx.lineWidth = 2.2; ctx.strokeStyle = INK; ctx.stroke();
+  if (roar) {
+    rr(cx - 13, hy + 8, 27, 17, 7); fillStroke(C.mouth, 2.5);
+    ctx.fillStyle = '#fff'; ctx.fillRect(cx - 10, hy + 9.5, 21, 5); ctx.fillRect(cx - 9, hy + 19, 19, 4);
+    ell(cx + 0.5, hy + 18, 6, 2.5, '#e06a7a');
+  } else {
+    // big clenched toothy grin
+    const mouth = () => { ctx.beginPath(); ctx.moveTo(cx - 14, hy + 9); ctx.quadraticCurveTo(cx, hy + 6, cx + 15, hy + 9); ctx.quadraticCurveTo(cx + 13, hy + 22, cx, hy + 22); ctx.quadraticCurveTo(cx - 12, hy + 22, cx - 14, hy + 9); ctx.closePath(); };
+    mouth(); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.save(); mouth(); ctx.clip();
+    ctx.fillStyle = '#e0707e'; ctx.fillRect(cx - 16, hy + 5, 32, 4.5); ctx.fillRect(cx - 16, hy + 20, 32, 4);
+    line(cx - 14, hy + 15, cx + 15, hy + 15, 1.6, '#b9ada3');
+    ctx.strokeStyle = '#cfc4ba'; ctx.lineWidth = 1.1; [-8, -3, 2, 7].forEach(o => { ctx.beginPath(); ctx.moveTo(cx + o, hy + 8); ctx.lineTo(cx + o, hy + 22); ctx.stroke(); });
+    ctx.restore(); mouth(); ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke();
+  }
+}
 function drawLian(h) {
   const t = G.t, mv = moving(h), ls = mv ? Math.sin(h.walkT) : 0, air = !h.onGround;
   const p = h.atk > 0 ? 1 - h.atk / ATK_T : 0;
-  const roar = h.atk > 0 || h.spec > 0 || h.pose === 'roar';
+  const roar = h.atk > 0 || h.spec > 0;
   const cheer = h.pose === 'cheer' || h.spec > 0;
   const bob = mv ? -Math.abs(Math.cos(h.walkT)) * 3 : Math.sin(t * 0.08) * 1.2;
   const f1 = air ? [-12, -12] : [-7 + ls * 10, -5], f2 = air ? [12, -16] : [7 - ls * 10, -5];
@@ -374,92 +405,101 @@ function drawLian(h) {
   olimb(6, -34, f2[0], f2[1], 11, C.lianSkin); shoe(f2[0], f2[1]);
   ctx.save(); ctx.translate(0, bob);
   arm(-6, -84, cheer ? -2.7 : 0.15 - ls * 0.5, 26, C.lianSkin, C.lianShirt);
-  const hx = 2, hy = -120;
-  blobs([[-18, -6, 22], [-24, 12, 19], [-20, 30, 15], [-6, -22, 20], [12, -24, 18], [25, -10, 15], [-31, -2, 15], [-10, 36, 12], [-31, 22, 13], [26, 10, 11]], C.lianHair, hx, hy);
+  const hx = 3, hy = -121;
+  // big curly hair, middle part, down to the shoulders
+  blobs([[-22, -8, 22], [-27, 12, 20], [-25, 32, 16], [-8, -22, 20], [13, -23, 19], [28, -8, 17], [31, 12, 16], [29, 31, 13], [-12, 38, 13], [15, 38, 12], [-33, 2, 15]], C.lianHair, hx, hy);
   rr(-20, -52, 40, 22, 6); fillStroke(C.shorts);
   rr(-22, -95, 44, 50, 12); fillStroke(C.lianShirt);
-  // tiny tree logo on the shirt
-  line(8, -70, 8, -64, 2, '#c9e8b0'); circ(8, -74, 5, '#7fd36b'); ctx.fillStyle = '#fff'; ctx.fillRect(1, -64, 5, 4); ctx.fillRect(11, -64, 5, 4);
+  // school logo: a little tree over three houses
+  line(8, -73, 8, -66, 2, '#8a6a3a'); circ(8, -77, 5.5, '#7fd36b'); circ(5, -79, 1.3, '#ffd23f'); circ(11, -76, 1.3, '#ffd23f');
+  ctx.fillStyle = '#fff'; [1, 6.5, 12].forEach(x => { ctx.fillRect(x, -65, 4, 3.5); }); line(0, -60, 18, -60, 1.5, '#7fd36b');
   circ(hx, hy, 27, C.lianSkin, 3);
-  ell(hx + 20, hy + 8, 5, 3.5, 'rgba(240,120,120,.45)');
-  ell(hx - 4, hy + 8, 5, 3.5, 'rgba(240,120,120,.45)');
-  ctx.strokeStyle = INK; ctx.lineCap = 'round';
-  if (roar) {
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(hx - 3, hy - 6); ctx.lineTo(hx + 5, hy - 2); ctx.lineTo(hx - 2, hy + 1); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(hx + 21, hy - 6); ctx.lineTo(hx + 13, hy - 2); ctx.lineTo(hx + 20, hy + 1); ctx.stroke();
-    line(hx - 5, hy - 12, hx + 7, hy - 7, 3.5, INK); line(hx + 23, hy - 12, hx + 11, hy - 7, 3.5, INK);
-    line(hx + 11, hy + 1, hx + 13, hy + 4, 2, INK); line(hx + 16, hy + 1, hx + 14, hy + 4, 2, INK);
-    rr(hx - 3, hy + 8, 26, 15, 6); fillStroke(C.mouth, 2.5);
-    ctx.fillStyle = '#fff'; ctx.fillRect(hx, hy + 9.5, 20, 4.5); ctx.fillRect(hx + 1, hy + 17.5, 18, 3.5);
-    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1; for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(hx + i * 4, hy + 9.5); ctx.lineTo(hx + i * 4, hy + 14); ctx.stroke(); }
-  } else {
-    ell(hx + 1, hy - 2, 3.4, 4.8, INK); ell(hx + 16, hy - 2, 3.4, 4.8, INK);
-    circ(hx + 2.2, hy - 3.6, 1.3, '#fff'); circ(hx + 17.2, hy - 3.6, 1.3, '#fff');
-    line(hx - 4, hy - 11, hx + 5, hy - 12, 2.5, INK); line(hx + 12, hy - 12, hx + 21, hy - 11, 2.5, INK);
-    ctx.beginPath(); ctx.arc(hx + 11, hy + 3, 2.5, 0.2, Math.PI - 0.2); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(hx - 2, hy + 9); ctx.quadraticCurveTo(hx + 9, hy + 24, hx + 21, hy + 9); ctx.closePath(); fillStroke(C.mouth, 2.5);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(hx + 1, hy + 10); ctx.lineTo(hx + 19, hy + 10); ctx.lineTo(hx + 17, hy + 13); ctx.lineTo(hx + 3, hy + 13); ctx.fill();
-  }
-  blobs([[-5, -22, 11], [8, -25, 10], [19, -19, 8], [-16, -15, 10], [-24, -2, 9]], C.lianHair, hx, hy);
+  lianFace(hx, hy, roar);
+  blobs([[-9, -21, 12], [16, -21, 12], [-20, -13, 10], [27, -12, 9], [-25, 2, 8], [30, 2, 7], [-26, 15, 7], [31, 15, 6]], C.lianHair, hx, hy);
+  line(hx + 3.5, hy - 33, hx + 3.5, hy - 22, 2.5, C.lianCurl);
   ctx.strokeStyle = C.lianCurl; ctx.lineWidth = 2;
-  [[-20, 4], [-12, -24], [4, -30], [-28, 18], [18, -26]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(hx + x, hy + y, 4, 0.5, 4.5); ctx.stroke(); });
+  [[-22, 6], [-14, -26], [10, -30], [-30, 20], [22, -24], [30, 20], [-4, 36], [26, 34]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(hx + x, hy + y, 4, 0.5, 4.5); ctx.stroke(); });
   const idle = 0.6 + ls * 0.3 + (mv ? 0 : Math.sin(t * 0.08) * 0.05);
   const fa = h.spec > 0 ? -2.8 : (h.pose === 'cheer' ? -2.4 : swingA(p, idle));
   arm(8, -84, fa, 26, C.lianSkin, C.lianShirt, h.weapon === 'pillow' ? pillow(30, 44) : foamSword);
   ctx.restore();
 }
 
+function goselFace(hx, hy, open) {
+  const cx = hx + 4;
+  ctx.save(); ctx.globalAlpha = 0.3; ctx.beginPath(); ctx.arc(hx, hy, 27, 0.35, 2.8); ctx.lineWidth = 6; ctx.strokeStyle = C.goselHair; ctx.stroke(); ctx.restore();
+  // chin beard
+  ctx.beginPath(); ctx.moveTo(cx - 10, hy + 21); ctx.quadraticCurveTo(cx - 11, hy + 35, cx, hy + 37); ctx.quadraticCurveTo(cx + 11, hy + 35, cx + 10, hy + 21); ctx.quadraticCurveTo(cx, hy + 27, cx - 10, hy + 21); ctx.closePath(); fillStroke(C.goselHair, 1.5);
+  ctx.beginPath(); ctx.arc(cx, hy + 8, 4.2, 0.2, Math.PI - 0.2); ctx.lineWidth = 2.2; ctx.strokeStyle = INK; ctx.stroke();
+  if (open) {
+    ctx.beginPath(); ctx.moveTo(cx - 11, hy + 15); ctx.lineTo(cx + 12, hy + 15); ctx.quadraticCurveTo(cx, hy + 30, cx - 11, hy + 15); ctx.closePath();
+    ctx.save(); fillStroke(C.mouth, 2.5); ctx.clip(); ctx.fillStyle = '#fff'; ctx.fillRect(cx - 12, hy + 14, 25, 5); ctx.restore();
+  } else {
+    ell(cx, hy + 18.5, 9.5, 3.8, '#b86f5e', 0, 2);
+    line(cx - 8, hy + 18.5, cx + 9, hy + 18, 1.5, '#6a2f28');
+    line(cx + 8, hy + 18, cx + 11, hy + 16, 1.8, INK);
+  }
+  // thin mustache
+  ctx.beginPath(); ctx.moveTo(cx - 12, hy + 15.5); ctx.quadraticCurveTo(cx, hy + 10.5, cx + 12, hy + 15.5); ctx.lineWidth = 2.6; ctx.strokeStyle = C.goselHair; ctx.stroke();
+  // mirrored sport sunglasses
+  const g = ctx.createLinearGradient(cx - 26, hy - 12, cx + 26, hy + 4);
+  g.addColorStop(0, '#1f5fd0'); g.addColorStop(0.3, '#7fe0ff'); g.addColorStop(0.55, '#ffe066'); g.addColorStop(0.78, '#8fe07a'); g.addColorStop(1, '#1f5fd0');
+  line(cx - 26, hy - 7, hx - 27, hy - 1, 3, '#3a3a44');
+  ctx.beginPath(); ctx.moveTo(cx - 27, hy - 9); ctx.quadraticCurveTo(cx, hy - 15, cx + 27, hy - 9); ctx.lineTo(cx + 25, hy); ctx.quadraticCurveTo(cx + 16, hy + 6, cx + 5, hy + 1); ctx.lineTo(cx, hy - 3); ctx.lineTo(cx - 5, hy + 1); ctx.quadraticCurveTo(cx - 16, hy + 6, cx - 25, hy); ctx.closePath(); fillStroke(g, 3);
+  ctx.beginPath(); ctx.moveTo(cx - 27, hy - 9); ctx.quadraticCurveTo(cx, hy - 15, cx + 27, hy - 9); ctx.lineWidth = 4; ctx.strokeStyle = '#3a3a44'; ctx.stroke();
+  line(cx - 19, hy - 6, cx - 13, hy - 1, 2.5, 'rgba(255,255,255,.85)'); line(cx + 10, hy - 7, cx + 14, hy - 3, 2, 'rgba(255,255,255,.7)');
+}
 function drawGosel(h) {
   const t = G.t, mv = moving(h), ls = mv ? Math.sin(h.walkT) : 0, air = !h.onGround;
   const p = h.atk > 0 ? 1 - h.atk / ATK_T : 0;
   const cheer = h.pose === 'cheer' || h.spec > 0;
   const bob = mv ? -Math.abs(Math.cos(h.walkT)) * 3 : Math.sin(t * 0.07 + 1) * 1.4;
   const f1 = air ? [-14, -18] : [-9 + ls * 14, -6], f2 = air ? [16, -22] : [9 - ls * 14, -6];
-  olimb(-9, -62, f1[0], f1[1], 15, C.jeans); shoe(f1[0], f1[1], '#3a2a22', '#8a6a4a');
-  olimb(9, -62, f2[0], f2[1], 15, C.jeans); shoe(f2[0], f2[1], '#3a2a22', '#8a6a4a');
+  olimb(-9, -62, f1[0], f1[1], 15, C.jeans); shoe(f1[0], f1[1], '#f4f4f4', '#2f4fb0');
+  olimb(9, -62, f2[0], f2[1], 15, C.jeans); shoe(f2[0], f2[1], '#f4f4f4', '#2f4fb0');
   ctx.save(); ctx.translate(0, bob);
   arm(-10, -124, cheer ? -2.6 : 0.12 - ls * 0.45, 36, C.goselSkin, C.goselShirt);
   const hx = 4, hy = -168;
-  // braids hanging down the back
-  const sway = Math.sin(t * 0.1 + h.x * 0.02) * 1.5 - h.vx * 0.4;
-  [-2.1, -2.5, -2.85, 3.05, 2.75].forEach((a, i) => {
-    let x = hx + Math.cos(a) * 27, y = hy + Math.sin(a) * 27;
-    const n = 5 + (i % 2);
-    for (let k = 0; k < n; k++) {
-      ell(x, y, 5, 5.5, k >= n - 2 ? C.braidTip : '#3b2616', 0, 2);
-      x += -2 - k * 0.3 + sway * 0.3; y += 7;
-    }
-  });
   rr(-9, -142, 18, 14, 4); fillStroke(C.goselSkin, 2.5);
+  // blue shirt with wavy stripes
   rr(-30, -134, 60, 76, 14); fillStroke(C.goselShirt);
-  line(-10, -128, 10, -128, 2, '#c9d19a');
-  rr(-29, -66, 58, 12, 4); fillStroke(C.jeans, 2.5);
-  circ(hx, hy, 31, C.goselSkin, 3);
-  // hair cap with braided rows
-  ctx.save(); ctx.beginPath(); ctx.arc(hx, hy, 31, 0, 7); ctx.clip();
-  ctx.fillStyle = C.goselHair; ctx.beginPath(); ctx.ellipse(hx - 6, hy - 20, 36, 22, -0.25, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#5a3a22'; ctx.lineWidth = 2;
-  for (let r = 0; r < 4; r++) { for (let k = 0; k < 6; k++) { const bx = hx - 30 + k * 9, by = hy - 34 + r * 7 + k * 1.2; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + 4, by + 3); ctx.lineTo(bx + 8, by); ctx.stroke(); } }
+  ctx.save(); rr(-30, -134, 60, 76, 14); ctx.clip();
+  ctx.strokeStyle = C.goselStripe; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+  for (let y = -128; y < -60; y += 10) { ctx.beginPath(); for (let x = -32; x <= 32; x += 4) ctx.lineTo(x, y + Math.sin(x * 0.22 + y) * 2.5); ctx.stroke(); }
   ctx.restore();
-  ctx.beginPath(); ctx.arc(hx, hy, 31, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
-  ell(hx - 8, hy + 2, 6, 9, C.goselSkin, 0, 2.5);
-  // beard along the jaw and a chin goatee
-  ctx.save(); ctx.beginPath(); ctx.arc(hx, hy, 29.5, 0.05, 2.5); ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(34,22,14,.85)'; ctx.stroke(); ctx.restore();
-  ell(hx + 16, hy + 28, 10, 6, 'rgba(34,22,14,.9)');
-  // face
-  ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.arc(hx + 9, hy - 2, 5, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
-  ctx.beginPath(); ctx.arc(hx + 24, hy - 2, 5, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
-  line(hx + 3, hy - 13, hx + 13, hy - 15, 3.5, C.goselHair); line(hx + 19, hy - 15, hx + 29, hy - 13, 3.5, C.goselHair);
-  ctx.beginPath(); ctx.moveTo(hx + 20, hy); ctx.quadraticCurveTo(hx + 30, hy + 8, hx + 20, hy + 10); ctx.lineWidth = 2.5; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(hx + 8, hy + 14); ctx.quadraticCurveTo(hx + 20, hy + 10, hx + 32, hy + 14); ctx.lineWidth = 3.5; ctx.strokeStyle = C.goselHair; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(hx + 7, hy + 17); ctx.lineTo(hx + 33, hy + 16); ctx.quadraticCurveTo(hx + 22, hy + 34, hx + 7, hy + 17); ctx.closePath();
-  ctx.save(); fillStroke(C.mouth, 2.5); ctx.clip(); ctx.fillStyle = '#fff'; ctx.fillRect(hx + 6, hy + 15, 28, 5.5); ctx.restore();
-  ell(hx + 30, hy + 8, 4, 3, 'rgba(240,120,120,.35)');
+  rr(-30, -134, 60, 76, 14); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, -134, 10, 0.2, Math.PI - 0.2); ctx.lineWidth = 3; ctx.strokeStyle = '#6f93e6'; ctx.stroke();
+  rr(-29, -66, 58, 12, 4); fillStroke(C.jeans, 2.5);
+  circ(hx, hy, 30, C.goselSkin, 3);
+  ell(hx - 25, hy + 4, 5, 8, C.goselSkin, 0, 2.5);
+  // short curly hair on top
+  blobs([[-20, -20, 9], [-10, -28, 10], [3, -31, 10], [16, -28, 10], [25, -19, 8], [-26, -9, 7], [-1, -23, 8], [10, -23, 8]], C.goselHair, hx, hy);
+  ctx.strokeStyle = C.goselCurl; ctx.lineWidth = 2;
+  [[-18, -22], [-8, -30], [4, -33], [16, -30], [24, -20], [-2, -24], [-25, -10]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(hx + x, hy + y, 3, 0.4, 4.4); ctx.stroke(); });
+  goselFace(hx, hy, h.atk > 0 || h.spec > 0 || h.pose === 'cheer');
   const idle = 0.4 + ls * 0.3 + (mv ? 0 : Math.sin(t * 0.07) * 0.05);
   const fa = h.spec > 0 ? -2.7 : (h.pose === 'cheer' ? -2.5 : swingA(p, idle));
   arm(12, -124, fa, 34, C.goselSkin, C.goselShirt, pillow(42, 60));
+  ctx.restore();
+}
+
+function drawFrog(h) {
+  const t = G.t, sq = h.onGround ? 1 + Math.sin(t * 0.2) * 0.04 : 0.9;
+  ctx.save(); ctx.scale(1.2, 1.2 * sq);
+  ell(-22, -10, 16, 9, '#4aa83a', -0.3, 2.5); ell(22, -10, 16, 9, '#4aa83a', 0.3, 2.5);
+  ell(0, -26, 30, 24, '#5fbf4a', 0, 3); ell(0, -20, 18, 14, '#c8ec9a');
+  ell(-12, -3, 8, 4, '#4aa83a', 0, 2); ell(12, -3, 8, 4, '#4aa83a', 0, 2);
+  circ(-13, -48, 11, '#5fbf4a', 3); circ(13, -48, 11, '#5fbf4a', 3);
+  if (h.kind === 'gosel') {
+    blobs([[-4, -59, 5], [4, -60, 5], [10, -57, 4], [-10, -57, 4]], C.goselHair);
+    const g = ctx.createLinearGradient(-24, -54, 24, -44); g.addColorStop(0, '#1f5fd0'); g.addColorStop(0.4, '#7fe0ff'); g.addColorStop(0.6, '#ffe066'); g.addColorStop(1, '#8fe07a');
+    ctx.beginPath(); ctx.moveTo(-25, -52); ctx.quadraticCurveTo(0, -56, 25, -52); ctx.lineTo(23, -44); ctx.quadraticCurveTo(12, -39, 3, -45); ctx.lineTo(0, -47); ctx.lineTo(-3, -45); ctx.quadraticCurveTo(-12, -39, -23, -44); ctx.closePath(); fillStroke(g, 2.5);
+  } else {
+    blobs([[-6, -61, 7], [4, -63, 7], [12, -58, 6], [-13, -57, 5]], C.lianHair);
+    circ(-13, -48, 6.5, '#fff', 2); circ(13, -48, 6.5, '#fff', 2); circ(-12, -47, 3.2, INK); circ(14, -47, 3.2, INK);
+  }
+  ctx.beginPath(); ctx.arc(0, -32, 14, 0.25, Math.PI - 0.25); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+  ell(-19, -30, 4.5, 3, 'rgba(240,120,120,.5)'); ell(19, -30, 4.5, 3, 'rgba(240,120,120,.5)');
   ctx.restore();
 }
 
@@ -538,7 +578,7 @@ function drawQueen(q) {
   rr(-15, -98, 30, 30, 8); fillStroke(q.bodice);
   const up = dance || q.cheer ? -2.6 + Math.sin(t * 0.2 + q.seed) * 0.4 : 0.3;
   arm(-13, -94, up, 24, q.skin, q.bodice);
-  arm(13, -94, dance || q.cheer ? up : (q.worried ? 0.9 : 0.3), 24, q.skin, q.bodice);
+  arm(13, -94, q.wand ? -2.2 + Math.sin(t * 0.3) * 0.2 : (dance || q.cheer ? up : (q.worried ? 0.9 : 0.3)), 24, q.skin, q.bodice, q.wand ? wand : null);
   circ(0, -118, 19, q.skin, 3);
   ctx.beginPath(); ctx.arc(0, -121, 19, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(10, -124); ctx.quadraticCurveTo(0, -130, -12, -122); ctx.closePath(); ctx.fillStyle = q.hair; ctx.fill();
   ell(-9, -113, 3.5, 2.5, 'rgba(240,120,120,.45)'); ell(9, -113, 3.5, 2.5, 'rgba(240,120,120,.45)');
@@ -555,7 +595,7 @@ function drawQueen(q) {
   ctx.beginPath(); ctx.moveTo(-14, -134); ctx.lineTo(-14, -148); ctx.lineTo(-7, -140); ctx.lineTo(0, -152); ctx.lineTo(7, -140); ctx.lineTo(14, -148); ctx.lineTo(14, -134); ctx.closePath(); fillStroke(C.gold, 2.5);
   circ(0, -140, 2.6, q.trim); circ(-9, -138, 2, '#e0304a'); circ(9, -138, 2, '#e0304a');
   ctx.restore();
-  if (q.label) text(q.name, 0, -178 + bob, 20, '#fff');
+  if (q.label) { ctx.save(); ctx.scale(q.face || 1, 1); text(q.name, 0, -178 - (q.seed ? 24 : 0) + bob, 19, '#fff'); ctx.restore(); }
 }
 
 function drawMouse(m) {
@@ -567,7 +607,8 @@ function drawMouse(m) {
   line(-6, -2, -6 + run * 4, 1, 2.5, INK); line(6, -2, 6 - run * 4, 1, 2.5, INK);
 }
 
-function drawHero(h) { if (h.kind === 'lian') drawLian(h); else drawGosel(h); }
+function drawHero(h) { if (h.frog) drawFrog(h); else if (h.kind === 'lian') drawLian(h); else drawGosel(h); }
+const wand = len => { line(0, len, 0, len + 30, 4, '#6a4222'); starPath(0, len + 36, 10); fillStroke('#ffd23f', 2); };
 
 // ---------- rooms ----------
 const ROOM_ART = {
@@ -766,6 +807,7 @@ const SFX = {
   win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, i === 3 ? 0.5 : 0.16, 'triangle', 0.13, null, i * 0.14)),
   key: () => [880, 1320, 1760].forEach((f, i) => tone(f, 0.18, 'sine', 0.1, null, i * 0.09)),
   squeak: () => [1500, 1800, 1600].forEach((f, i) => tone(f, 0.06, 'sine', 0.07, null, i * 0.1)),
+  ribbit: () => { tone(260, 0.09, 'square', 0.09, 170); tone(300, 0.1, 'square', 0.09, 190, 0.14); },
   snore: () => tone(110, 0.5, 'triangle', 0.06, 90)
 };
 const sfx = n => { try { SFX[n] && SFX[n](); } catch (e) { /* audio is optional */ } };
@@ -869,7 +911,7 @@ function updateTouchUI() {
   const humanSpecial = G.heroes.map(h => h.ctrl);
   document.querySelectorAll('.tbtn.spec').forEach(b => {
     const h = G.heroes.find(x => x.ctrl === (b.dataset.p === '1' ? 0 : 1));
-    b.textContent = h ? (h.kind === 'lian' ? 'Roar' : 'Smile') : 'Super';
+    b.textContent = h ? (h.kind === 'lian' ? 'Roar' : 'Shine') : 'Super';
   });
   return humanSpecial;
 }
@@ -893,7 +935,11 @@ function hit(target, src, dmg, big = false) {
     else if (target.state !== 'air' && target.state !== 'crouch') { target.state = 'hurt'; target.timer = target.boss ? 12 : 22; }
   } else if (target.type === 'hero') {
     target.hp -= dmg; target.inv = 80; target.kx = dir * 9; target.vy = -5; target.onGround = false; target.atk = 0;
-    if (G.mode === 'duel') { burst(target.x, target.y - 110, 'feather', 12, { sp: 5, up: 2, life: 90 }); pop(target.x, target.y - 190, pick(['FLUMP!', 'FWUMP!', 'POOF!']), { color: '#fff' }); sfx('bonk'); if (src.type === 'hero') src.meter = Math.min(100, src.meter + 18); }
+    if (G.mode === 'duel' && src.type === 'hero') {
+      if (src.kind === 'gosel') { burst(target.x, target.y - 110, 'feather', 12, { sp: 5, up: 2, life: 90 }); pop(target.x, target.y - 190, pick(['FLUMP!', 'FWUMP!', 'POOF!']), { color: '#fff' }); }
+      else { burst(target.x, target.y - 150, 'star', 6, { sp: 4, up: 2, color: '#ffd23f', size: 7 }); pop(target.x, target.y - 190, pick(['BONK!', 'BOING!', 'WHAP!']), { color: '#ffd23f' }); }
+      sfx('bonk'); src.meter = Math.min(100, src.meter + 18);
+    }
     else { pop(target.x, target.y - 190, pick(['Oof!', 'Hey!', 'Oopsie!']), { size: 26, color: '#ffc2da' }); sfx('ouch'); }
     if (target.hp <= 0) { target.hp = 0; heroDown(target, src); }
   }
@@ -904,7 +950,7 @@ function knockOut(k) {
   if (!k.boss) { burst(k.x, k.y - 150, 'star', 8, { sp: 3, up: 3, color: '#ffd23f' }); }
 }
 function heroDown(h, src) {
-  if (G.mode === 'duel') { h.nap = 99999; duelRoundOver(src.kind); return; }
+  if (G.mode === 'duel') { h.nap = 99999; duelRoundOver(G.heroes.find(x => x !== h).kind); return; }
   h.nap = 150; h.atk = 0; h.spec = 0; sfx('snore');
   pop(h.x, h.y - 170, 'Nap time!', { size: 26 });
 }
@@ -924,7 +970,7 @@ function startSpecial(h) {
     G.parts.push({ x: h.x, y: h.y - 100, vx: 0, vy: 0, life: 34, max: 34, kind: 'ring', color: 'rgba(255,255,255,.6)', rot: 0, vr: 0, size: 10 });
     for (const e of G.ents) if (e.team !== h.team && canHit(e) && Math.abs(e.x - h.x) < 320) { hit(e, h, 2, true); e.kx = sign(e.x - h.x) * 16; }
   } else {
-    sfx('smile'); pop(h.x, h.y - 220, 'SUPER SMILE!', { size: 46, color: '#fff6a0', life: 70 });
+    sfx('smile'); pop(h.x, h.y - 220, 'SUNNY SHINE!', { size: 46, color: '#fff6a0', life: 70 });
     for (const e of G.ents) if (e.team !== h.team && canHit(e) && (e.x - h.x) * h.face > -10 && Math.abs(e.x - h.x) < 760) hit(e, h, 2, true);
   }
 }
@@ -1162,6 +1208,7 @@ function sceneBanquet() {
 }
 function sceneThrone() { const k = makeKnight('purple', 480, true); k.state = 'idle'; k.face = -1; return [...heroActors(170, 1), k]; }
 function startFinale() {
+  G.finaleKind = 'team';
   G.mode = 'finale'; G.bg = 'tower'; G.finaleT = 0; G.showCage = true; G.cageLift = 0; G.parts = []; G.pops = [];
   const q1 = makeQueen('mama', 440), q2 = makeQueen('kristina', 520); q1.worried = q2.worried = true;
   G.heroes.forEach((h, i) => Object.assign(h, { x: -60 - i * 70, y: FLOOR, vx: 0, face: 1, pose: null, atk: 0, spec: 0, nap: 0, inv: 0, onGround: true }));
@@ -1170,80 +1217,124 @@ function startFinale() {
   updateTouchUI();
 }
 function updateFinale() {
-  const T = ++G.finaleT;
+  const T = ++G.finaleT, battle = G.finaleKind === 'battle';
   G.heroes.forEach((h, i) => {
-    const goal = 220 + i * 90;
-    if (h.x < goal) { h.vx = 3; h.x += 3; h.walkT += 0.27; } else { h.vx = 0; }
-    if (T > 240) { h.pose = 'cheer'; if (h.onGround && Math.random() < 0.03) { h.vy = -9; } }
+    const goal = battle ? (h === G.winner ? 300 : 130) : 220 + i * 90;
+    if (!h.frog) { if (h.x < goal) { h.vx = 3; h.x += 3; h.walkT += 0.27; } else h.vx = 0; }
+    if (T > 240 && (!battle || h === G.winner)) { h.pose = 'cheer'; if (h.onGround && Math.random() < 0.03) h.vy = -9; }
+    if (h.frog) {
+      h.vx = 0;
+      if (h.onGround && T % 55 === 0) { h.vy = -9; h.onGround = false; if (h.x > 220) h.face = -1; else if (h.x < 60) h.face = 1; if (T % 110 === 0) { pop(h.x, h.y - 110, 'Ribbit!', { size: 24, color: '#b6f09c', life: 45 }); sfx('ribbit'); } }
+      if (!h.onGround) h.x += h.face * 2.2;
+    }
     h.vy += GRAV; h.y += h.vy; if (h.y >= FLOOR) { h.y = FLOOR; h.vy = 0; h.onGround = true; } else h.onGround = false;
   });
   if (T === 150) { sfx('key'); pop(480, 200, 'Click!', { size: 40, color: '#ffd23f' }); }
   if (T > 150 && T < 240) G.cageLift = Math.min(260, G.cageLift + 3.2);
   if (T === 200) { G.queens.forEach(q => { q.worried = false; }); sfx('win'); burst(480, 300, 'heart', 14, { sp: 4, up: 2, color: '#ff6fa8', size: 16, life: 80 }); }
-  if (T === 230) { G.queens.forEach(q => { q.dance = true; }); pop(480, 150, 'Thank you, heroes!', { size: 40, life: 120, color: '#ffc2da' }); }
-  if (T === 280) {
-    ['red', 'blue', 'pink'].forEach((c, i) => { const k = makeKnight(c, W + 60 + i * 70); k.state = 'party'; k.face = -1; k.target = 640 + i * 80; G.ents.push(k); });
+  if (T === 230) { G.queens.forEach(q => { q.dance = true; }); pop(480, 150, battle ? `Thank you, ${G.winner.name}!` : 'Thank you, heroes!', { size: 40, life: 120, color: '#ffc2da' }); }
+  if (battle) {
+    const q = G.queens[0], L = G.loser;
+    if (T === 300) { q.dance = false; q.wand = true; q.face = -1; pop(420, 170, 'And now... the FROG spell!', { size: 32, life: 100, color: '#b6f09c' }); }
+    if (T === 350) {
+      burst(L.x, L.y - 80, 'spark', 26, { sp: 6, color: '#b6f09c', size: 9 });
+      G.parts.push({ x: L.x, y: L.y - 60, vx: 0, vy: 0, life: 26, max: 26, kind: 'ring', color: 'rgba(182,240,156,.9)', rot: 0, vr: 0, size: 10 });
+      L.frog = true; L.pose = null; L.face = 1; G.shake = 10; sfx('ribbit');
+      pop(L.x + 40, L.y - 150, 'RIBBIT!', { size: 48, color: '#b6f09c', life: 90 });
+    }
+    if (T === 390) { q.wand = false; q.dance = true; q.face = 1; }
+    if (T === 500) showStory('battleEnd', { winner: G.winner.name, loser: L.name });
+  } else {
+    if (T === 280) ['red', 'blue', 'pink'].forEach((c, i) => { const k = makeKnight(c, W + 60 + i * 70); k.state = 'party'; k.face = -1; k.target = 640 + i * 80; G.ents.push(k); });
+    if (T === 300) [0, 1, 2].forEach(i => G.ents.push({ type: 'mouse', x: W + 40 + i * 30, y: FLOOR, vx: -3, vy: 0, seed: i, face: -1, t: 0, delay: 0, party: true, target: 590 - i * 26 }));
+    G.ents.forEach(e => {
+      if (e.type === 'knight') { e.t++; if (e.x > e.target) { e.x -= 2.5; e.walkT += 0.25; e.vx = -2.5; } else { e.vx = 0; e.onGround = true; } }
+      if (e.type === 'mouse' && e.party && e.x > e.target) e.x += e.vx;
+    });
+    if (T === 360) pop(760, 240, 'Sorry! Can we come to the party?', { size: 26, life: 140, color: '#fff' });
+    if (T === 430) showStory('end');
   }
-  if (T === 300) { [0, 1, 2].forEach(i => G.ents.push({ type: 'mouse', x: W + 40 + i * 30, y: FLOOR, vx: -3, vy: 0, seed: i, face: -1, t: 0, delay: 0, party: true, target: 590 - i * 26 })); }
-  G.ents.forEach(e => {
-    if (e.type === 'knight') { e.t++; if (e.x > e.target) { e.x -= 2.5; e.walkT += 0.25; e.vx = -2.5; } else { e.vx = 0; e.onGround = true; } }
-    if (e.type === 'mouse' && e.party) { if (e.x > e.target) e.x += e.vx; }
-  });
-  if (T === 360) pop(760, 240, 'Sorry! Can we come to the party?', { size: 26, life: 140, color: '#fff' });
   if (T > 200 && T % 3 === 0) burst(rnd(0, W), -10, 'confetti', 2, { sp: 1, life: 200 });
-  if (T === 430) showStory('end');
 }
 
-// ---------- duel mode ----------
-function startDuel(which) {
+// ---------- battle mode: Lian vs Uncle Gosel ----------
+const BATTLE_ROOMS = ['gate', 'banquet', 'throne'];
+function startBattle(which) {
   audio(); startMusic();
+  G.lastBattle = which;
   G.players = which === 'pvp' ? 2 : 1;
-  const lian = makeHero('lian', 280, which === 'gosel' ? 'ai' : 0);
-  const gosel = makeHero('gosel', 680, which === 'lian' ? 'ai' : (which === 'pvp' ? 1 : 0));
-  lian.weapon = 'pillow'; lian.team = 'a'; gosel.team = 'b'; gosel.face = -1;
+  const lian = makeHero('lian', 190, which === 'gosel' ? 'ai' : 0);
+  const gosel = makeHero('gosel', 770, which === 'lian' ? 'ai' : (which === 'pvp' ? 1 : 0));
+  lian.team = 'a'; gosel.team = 'b'; gosel.face = -1;
   [lian, gosel].forEach(h => { h.hp = h.maxHp = 6; h.meter = 20; });
   G.heroes = [lian, gosel];
-  G.duel = { round: 1, wins: { lian: 0, gosel: 0 }, pause: 0, start: 90 };
-  const q1 = makeQueen('mama', 60), q2 = makeQueen('kristina', 900); q1.cheer = q2.cheer = true; q1.label = q2.label = false;
-  G.duelQueens = [q1, q2];
+  const q1 = makeQueen('mama', 440), q2 = makeQueen('kristina', 520); q1.worried = q2.worried = true;
+  setScene('tower', [q1, q2, lian, gosel], { cage: true });
+  showStory('battleIntro');
+}
+function beginBattleRounds() {
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-  G.mode = 'duel'; G.bg = 'throne'; G.parts = []; G.pops = []; G.showCage = false;
+  G.duel = { round: 1, wins: { lian: 0, gosel: 0 }, pause: 0, start: 110, knightT: 240 };
+  G.mode = 'duel'; G.showCage = false;
   resetDuelRound();
   updateTouchUI();
 }
 function resetDuelRound() {
   const [l, g] = G.heroes;
-  Object.assign(l, { x: 280, y: FLOOR, vx: 0, vy: 0, kx: 0, face: 1, hp: l.maxHp, nap: 0, inv: 0, atk: 0, spec: 0, pose: null });
-  Object.assign(g, { x: 680, y: FLOOR, vx: 0, vy: 0, kx: 0, face: -1, hp: g.maxHp, nap: 0, inv: 0, atk: 0, spec: 0, pose: null });
-  G.ents = [...G.duelQueens, l, g];
-  G.duel.start = 90;
+  Object.assign(l, { x: 260, y: FLOOR, vx: 0, vy: 0, kx: 0, face: 1, hp: l.maxHp, nap: 0, inv: 0, atk: 0, spec: 0, pose: null });
+  Object.assign(g, { x: 700, y: FLOOR, vx: 0, vy: 0, kx: 0, face: -1, hp: g.maxHp, nap: 0, inv: 0, atk: 0, spec: 0, pose: null });
+  G.bg = BATTLE_ROOMS[(G.duel.round - 1) % BATTLE_ROOMS.length];
+  G.ents = [l, g]; G.parts = []; G.pops = [];
+  G.duel.start = 110; G.duel.knightT = 240;
 }
 function duelRoundOver(winnerKind) {
   const d = G.duel; if (d.pause > 0) return;
   d.wins[winnerKind]++; d.pause = 170; d.winner = winnerKind;
   const w = G.heroes.find(h => h.kind === winnerKind); w.pose = 'cheer';
-  sfx('win'); burst(W / 2, 200, 'feather', 30, { sp: 7, up: 3, life: 120 });
+  sfx('win'); burst(W / 2, 160, 'confetti', 40, { sp: 6, up: 2, life: 120 });
   pop(W / 2, 200, `${w.name} wins round ${d.round}!`, { size: 44, life: 150, color: '#ffc53d' });
+  for (const e of G.ents) if (e.type === 'knight' && e.state !== 'flee' && e.state !== 'dizzy') { e.hp = 0; knockOut(e); }
 }
 function updateDuel() {
   const d = G.duel;
   if (d.start > 0) {
     d.start--;
-    if (d.start === 89) pop(W / 2, 220, `Round ${d.round}`, { size: 50, life: 50, color: '#ffc53d' });
-    if (d.start === 30) { pop(W / 2, 220, 'Pillows up!', { size: 50, life: 40, color: '#8fd0f2' }); sfx('boing'); }
-    G.heroes.forEach(h => { h.t++; });
+    if (d.start === 109) pop(W / 2, 200, `Round ${d.round}: ${ROOM_ART[G.bg].name}`, { size: 42, life: 60, color: '#ffc53d' });
+    if (d.start === 40) { pop(W / 2, 220, 'Fight!', { size: 56, life: 40, color: '#8fd0f2' }); sfx('boing'); }
     return;
   }
   if (d.pause > 0) {
     G.heroes.forEach(h => { if (h.nap === 0) { h.vx = 0; h.walkT = 0; phys(h, 40, W - 40); } });
+    G.ents.forEach(e => { if (e.type === 'knight') updateKnight(e); else if (e.type !== 'hero') updateMisc(e); });
+    G.ents = G.ents.filter(e => !e.dead);
     if (--d.pause === 0) {
-      if (d.wins[d.winner] >= 2) { const w = G.heroes.find(h => h.kind === d.winner); showStory('duelEnd', w.name); G.mode = 'scene'; updateTouchUI(); }
+      if (d.wins[d.winner] >= 2) startBattleFinale(d.winner);
       else { d.round++; resetDuelRound(); }
     }
     return;
   }
-  G.heroes.forEach(updateHero);
-  if (G.t % 150 === 0) { const q = pick(G.duelQueens); pop(q.x + (q.x < W / 2 ? 50 : -50), 300, pick(['Go Lian!', 'Go Gosel!', 'Fluffy!', 'Hee hee!']), { size: 22, life: 70, color: '#ffc2da' }); }
+  G.ents.forEach(e => { if (e.type === 'hero') updateHero(e); else if (e.type === 'knight') updateKnight(e); else updateMisc(e); });
+  separate();
+  G.ents = G.ents.filter(e => !e.dead);
+  if (--d.knightT <= 0) {
+    const awake = G.ents.filter(e => e.type === 'knight' && e.state !== 'flee' && e.state !== 'dizzy').length;
+    if (awake < 2) {
+      G.ents.push(makeKnight(pick(Object.keys(KNIGHT_COLORS)), Math.random() < 0.5 ? -60 : W + 60));
+      pop(W / 2, 150, 'A Silly Knight wants to play!', { size: 28, color: '#ffc2da' }); sfx('boing');
+    }
+    d.knightT = rnd(420, 660);
+  }
+}
+function startBattleFinale(winnerKind) {
+  G.mode = 'finale'; G.finaleKind = 'battle'; G.bg = 'tower'; G.finaleT = 0; G.showCage = true; G.cageLift = 0; G.parts = []; G.pops = [];
+  const q1 = makeQueen('mama', 440), q2 = makeQueen('kristina', 520); q1.worried = q2.worried = true;
+  const win = G.heroes.find(h => h.kind === winnerKind), lose = G.heroes.find(h => h.kind !== winnerKind);
+  const reset = { y: FLOOR, vx: 0, vy: 0, kx: 0, face: 1, pose: null, atk: 0, spec: 0, nap: 0, inv: 0, onGround: true, frog: false };
+  Object.assign(win, reset, { x: -60, hp: win.maxHp });
+  Object.assign(lose, reset, { x: -200, hp: lose.maxHp });
+  G.winner = win; G.loser = lose; G.queens = [q1, q2];
+  G.ents = [q1, q2, lose, win];
+  updateTouchUI();
 }
 
 // ---------- rendering ----------
@@ -1276,7 +1367,7 @@ function drawEntity(e) {
     if (e.spec > 0 && e.kind === 'gosel') {
       ctx.save(); ctx.globalAlpha = Math.min(1, e.spec / 20) * 0.75;
       const g = ctx.createLinearGradient(0, 0, 760, 0); g.addColorStop(0, 'rgba(255,246,160,1)'); g.addColorStop(1, 'rgba(255,246,160,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(30, -168); ctx.lineTo(760, -250); ctx.lineTo(760, -60); ctx.closePath(); ctx.fill(); ctx.restore();
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(34, -172); ctx.lineTo(760, -260); ctx.lineTo(760, -80); ctx.closePath(); ctx.fill(); ctx.restore();
     }
     drawHero(e);
   } else if (e.type === 'knight') {
@@ -1284,7 +1375,7 @@ function drawEntity(e) {
     drawKnight(e);
     ctx.filter = 'none';
     if (e.state === 'windup' || e.state === 'crouch') { ctx.scale(e.face, 1); text('!', 0, e.boss ? -310 : -185, 40, '#ffc53d'); }
-  } else if (e.type === 'queen') { ctx.scale(e.face || 1, 1); drawQueen(e); }
+  } else if (e.type === 'queen') drawQueen(e);
   else if (e.type === 'mouse') drawMouse(e);
   ctx.restore();
   ctx.globalAlpha = 1;
@@ -1301,7 +1392,7 @@ function drawHUD() {
     ctx.fillStyle = 'rgba(255,255,255,.15)'; rr(bx, by, bw, 10, 5); ctx.fill();
     const full = h.meter >= 100;
     ctx.fillStyle = full ? (Math.floor(G.t / 8) % 2 ? '#ffc53d' : '#fff6a0') : '#c9a13a'; rr(bx, by, Math.max(10, bw * h.meter / 100), 10, 5); ctx.fill();
-    text(full ? (h.kind === 'lian' ? 'ROAR ready!' : 'SMILE ready!') : (h.kind === 'lian' ? 'Roar' : 'Smile'), bx - 6, by + 5, 14, full ? '#ffc53d' : '#cbbfe6', 'right');
+    text(full ? (h.kind === 'lian' ? 'ROAR ready!' : 'SHINE ready!') : (h.kind === 'lian' ? 'Roar' : 'Shine'), bx - 6, by + 5, 14, full ? '#ffc53d' : '#cbbfe6', 'right');
     if (h.nap > 0 && G.mode !== 'duel') text('napping...', x + w - 14, y + 18, 16, '#c9d8ff', 'right');
   };
   G.heroes.forEach(h => panel(h, h.kind === 'gosel'));
@@ -1390,19 +1481,30 @@ const STORIES = {
     'The Silly Knights said sorry. So the queens invited everyone to the Royal Cookie Party, even the three little mice.',
     'And they all danced until the moon went to sleep. The End.'
   ], last: 'Play again', next: () => showMenu('scrTitle') },
-  duelEnd: { title: 'Pillow Champion!', pages: ['{name} is the Pillow Champion! Feathers everywhere! Now everybody shake hands and share a cookie.'], last: 'Back to the start', next: () => showMenu('scrTitle') }
+  battleIntro: { title: 'The Castle Battle', pages: [
+    'Oh no! The Silly Knights locked Queen Mama and Queen Kristina in the tallest tower.',
+    'Brave Lian and Uncle Gosel BOTH want to be the hero who saves them. Who will it be?',
+    'The queens called down: "Whoever wins the Castle Battle gets the golden key and saves us. Whoever loses... gets turned into a FROG!"',
+    'Win two rounds to win the battle. Watch out for the Silly Knights, they bonk everybody! Ready?'
+  ], last: 'Fight!', next: () => beginBattleRounds() },
+  battleEnd: { title: 'Ribbit!', pages: [
+    '{winner} won the Castle Battle and saved Queen Mama and Queen Kristina! Hooray for {winner}!',
+    'And {loser}? Poof! The queens turned {loser} into a little green frog. Ribbit, ribbit!',
+    "Don't worry. The frog spell wears off at bedtime, as long as {loser} says sorry and shares the cookies. The End!"
+  ], last: 'Rematch!', next: () => startBattle(G.lastBattle), alt: { label: 'Back to the start', fn: () => showMenu('scrTitle') } }
 };
 const storyEl = document.getElementById('story'), storyText = document.getElementById('storyText'), storyTitle = document.getElementById('storyTitle'), storyDots = document.getElementById('storyDots'), nextBtn = document.getElementById('nextBtn');
 let story = null;
-function showStory(id, name) {
-  story = { id, page: 0, name };
+function showStory(id, vars) {
+  story = { id, page: 0, vars: vars || {} };
   menuEl.hidden = true; storyEl.hidden = false; renderStory();
   setTimeout(() => nextBtn.focus({ preventScroll: true }), 30);
 }
 function renderStory() {
   const s = STORIES[story.id];
   storyTitle.textContent = s.title;
-  storyText.textContent = s.pages[story.page].replace('{name}', story.name || '');
+  storyText.textContent = s.pages[story.page].replace(/\{(\w+)\}/g, (_, k) => story.vars[k] || '');
+  altBtn.hidden = !(s.alt && story.page === s.pages.length - 1); if (s.alt) altBtn.textContent = s.alt.label;
   storyDots.innerHTML = s.pages.length > 1 ? s.pages.map((_, i) => `<i class="${i === story.page ? 'on' : ''}"></i>`).join('') : '';
   nextBtn.textContent = story.page === s.pages.length - 1 ? (s.last || "Let's go!") : 'Next';
   if (autoRead) speak();
@@ -1426,6 +1528,8 @@ function speak() {
 function stopSpeak() { try { speechSynthesis.cancel(); } catch (e) {} }
 document.getElementById('readBtn').addEventListener('click', () => { autoRead = true; speak(); });
 nextBtn.addEventListener('click', storyNext);
+const altBtn = document.getElementById('altBtn');
+altBtn.addEventListener('click', () => { const s = story && STORIES[story.id]; if (!s || !s.alt) return; stopSpeak(); storyEl.hidden = true; story = null; s.alt.fn(); });
 if (!('speechSynthesis' in window)) document.getElementById('readBtn').hidden = true;
 
 // ---------- menus ----------
@@ -1442,7 +1546,7 @@ menuEl.addEventListener('click', e => {
   audio();
   if (b.dataset.go) showMenu(b.dataset.go);
   if (b.dataset.rescue) { menuEl.hidden = true; startRescue(b.dataset.rescue); }
-  if (b.dataset.duel) { menuEl.hidden = true; startDuel(b.dataset.duel); }
+  if (b.dataset.battle) { menuEl.hidden = true; startBattle(b.dataset.battle); }
 });
 function togglePause(force) {
   if (G.mode !== 'play' && G.mode !== 'duel') return;
