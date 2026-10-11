@@ -1,0 +1,851 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zdravo &amp; Hola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&family=Nunito:wght@400;600;800&display=swap">
+<style>
+/* Layout: a playroom shelf — one column of big tappable tiles; the whole room re-tints
+   to the language being played (orange sun = Macedonian, teal sea = Spanish) as a context cue. */
+:root {
+  --bg: #F2F5FA;
+  --surface: #FFFFFF;
+  --ink: #1E2333;
+  --muted: #5B6377;
+  --line: #D9E0EC;
+  --mk: #D9481F;
+  --mk-soft: #FFE6D8;
+  --es: #0F7A87;
+  --es-soft: #D3F0F1;
+  --good: #23894E;
+  --good-soft: #DDF3E5;
+  --star: #E9A500;
+  --oops: #C2410C;
+  --font-display: "Balsamiq Sans", "Comic Neue", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --lang: var(--mk);
+  --lang-soft: var(--mk-soft);
+  --radius: 22px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141824; --surface: #1F2435; --ink: #EEF1F8; --muted: #A5ADC2; --line: #333B52;
+    --mk: #FF7D52; --mk-soft: #3B2419; --es: #3CC4D3; --es-soft: #12373B;
+    --good: #4CC27D; --good-soft: #173527; --star: #FFC531; --oops: #FF8A4C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141824; --surface: #1F2435; --ink: #EEF1F8; --muted: #A5ADC2; --line: #333B52;
+  --mk: #FF7D52; --mk-soft: #3B2419; --es: #3CC4D3; --es-soft: #12373B;
+  --good: #4CC27D; --good-soft: #173527; --star: #FFC531; --oops: #FF8A4C;
+  color-scheme: dark;
+}
+body.es { --lang: var(--es); --lang-soft: var(--es-soft); }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .4s;
+}
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 48px; display: grid; gap: 20px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); }
+h2 { font-size: clamp(1.35rem, 4vw, 1.8rem); }
+h3 { font-size: 1.15rem; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible, a:focus-visible { outline: 4px solid var(--lang); outline-offset: 3px; border-radius: 14px; }
+
+/* top bar */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand .sun { font-size: 2.2rem; line-height: 1; }
+.brand small { display: block; color: var(--muted); font-size: .85rem; font-family: var(--font-body); }
+.pills { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--surface); border: 2px solid var(--line); font-weight: 800; font-variant-numeric: tabular-nums; }
+.pill.star { color: var(--star); }
+.pill .t { color: var(--ink); }
+button.pill:hover { border-color: var(--lang); }
+
+/* language switch */
+.langs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lang-btn { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius); background: var(--surface); border: 3px solid var(--line); text-align: left; min-width: 0; transition: transform .15s, border-color .2s, background .2s; }
+.lang-btn .m { font-size: 2.4rem; line-height: 1; }
+.lang-btn > span:last-child { min-width: 0; }
+.lang-btn b { font-family: var(--font-display); font-size: clamp(1.05rem, 4.4vw, 1.3rem); display: block; }
+@media (max-width: 440px) { .lang-btn { padding: 12px 14px; } .lang-btn .m { display: none; } }
+.lang-btn span.s { color: var(--muted); font-size: .9rem; }
+.lang-btn[aria-pressed="true"].mk { border-color: var(--mk); background: var(--mk-soft); }
+.lang-btn[aria-pressed="true"].es { border-color: var(--es); background: var(--es-soft); }
+.lang-btn:active { transform: scale(.97); }
+
+/* tiles */
+.section-label { font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.tile { display: grid; justify-items: center; gap: 4px; padding: 18px 10px 14px; background: var(--surface); border: 3px solid var(--line); border-radius: var(--radius); text-align: center; transition: transform .15s, border-color .2s; min-width: 0; }
+.tile:hover { border-color: var(--lang); }
+.tile:active { transform: scale(.96); }
+.tile .e { font-size: 2.8rem; line-height: 1.1; }
+.tile b { font-family: var(--font-display); font-size: 1.15rem; color: var(--lang); }
+.tile small { color: var(--muted); font-size: .85rem; }
+.tile .stars { font-size: .85rem; color: var(--star); letter-spacing: 2px; min-height: 1.2em; }
+.hero-tile { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: var(--radius); background: var(--lang); color: #fff; text-align: left; transition: transform .15s; }
+.hero-tile:active { transform: scale(.98); }
+.hero-tile .e { font-size: 3rem; line-height: 1; }
+.hero-tile b { font-family: var(--font-display); font-size: 1.4rem; display: block; }
+.hero-tile span { opacity: .92; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+
+/* activity screens */
+.top { display: flex; align-items: center; gap: 12px; }
+.back { width: 52px; height: 52px; border-radius: 50%; background: var(--surface); border: 3px solid var(--line); font-size: 1.5rem; flex: none; }
+.back:hover { border-color: var(--lang); }
+.top h2 { flex: 1; min-width: 0; }
+.stage { background: var(--surface); border: 3px solid var(--line); border-radius: 28px; padding: 24px 16px; display: grid; justify-items: center; gap: 14px; text-align: center; }
+.big-e { font-size: clamp(6rem, 26vw, 9.5rem); line-height: 1.05; user-select: none; }
+.word { font-family: var(--font-display); font-size: clamp(2.2rem, 8vw, 3.4rem); color: var(--lang); line-height: 1.1; overflow-wrap: anywhere; }
+.tr { color: var(--muted); font-size: 1rem; font-style: italic; }
+.en { color: var(--muted); font-size: .95rem; }
+.en::before { content: "EN · "; font-size: .7rem; letter-spacing: .1em; font-weight: 800; }
+.btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 22px; border-radius: 999px; background: var(--lang-soft); color: var(--ink); font-weight: 800; font-size: 1.1rem; border: 3px solid transparent; transition: transform .12s; }
+.btn.primary { background: var(--lang); color: #fff; }
+.btn.good { background: var(--good); color: #fff; }
+.btn:active { transform: scale(.95); }
+.btn:hover { border-color: var(--lang); }
+.btn[disabled] { opacity: .4; pointer-events: none; }
+.speak { width: 92px; height: 92px; border-radius: 50%; background: var(--lang); color: #fff; font-size: 2.6rem; box-shadow: 0 6px 0 color-mix(in srgb, var(--lang) 60%, #000); transition: transform .1s, box-shadow .1s; }
+.speak:active { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--lang) 60%, #000); }
+.speak.pulse { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.08); } }
+.dots { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--lang); }
+.dots i.done { background: var(--good); }
+
+.choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 560px; }
+.choice { aspect-ratio: 1; max-width: 100%; border-radius: 24px; background: var(--bg); border: 4px solid var(--line); font-size: clamp(3rem, 14vw, 5rem); display: grid; place-items: center; transition: transform .12s, border-color .2s, background .2s; }
+.choice:hover { border-color: var(--lang); }
+.choice.right { border-color: var(--good); background: var(--good-soft); animation: pop .4s; }
+.choice.wrong { animation: shake .4s; border-color: var(--oops); }
+@keyframes pop { 50% { transform: scale(1.12); } }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+.swatch { width: 1em; height: 1em; border-radius: 42% 58% 55% 45% / 50% 45% 55% 50%; display: inline-block; border: 4px solid var(--line); }
+.numeral { display: grid; justify-items: center; gap: 4px; line-height: 1; }
+.numeral b { font-family: var(--font-display); font-size: 1em; }
+.numeral span { font-size: .22em; letter-spacing: 2px; max-width: 6em; overflow-wrap: anywhere; line-height: 1.2; }
+
+/* memory */
+.memory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 620px; }
+.card { aspect-ratio: 3/4; border-radius: 18px; border: 3px solid var(--line); background: var(--lang); color: #fff; font-size: 2rem; display: grid; place-items: center; padding: 6px; transition: transform .25s, background .2s; min-width: 0; }
+.card.open { background: var(--bg); color: var(--ink); }
+.card.open .w { color: var(--lang); }
+.card.done { background: var(--good-soft); border-color: var(--good); }
+.card .w { font-family: var(--font-display); font-size: clamp(.85rem, 3.4vw, 1.25rem); overflow-wrap: anywhere; line-height: 1.1; }
+.card .pic { font-size: clamp(2rem, 9vw, 3.2rem); }
+@media (max-width: 420px) { .memory { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* story & song */
+.line { font-family: var(--font-display); font-size: clamp(1.5rem, 5.5vw, 2.2rem); color: var(--lang); }
+.lyrics { display: grid; gap: 8px; width: 100%; max-width: 560px; text-align: left; }
+.lyric { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 16px; background: var(--bg); border: 3px solid transparent; text-align: left; }
+.lyric.now { border-color: var(--lang); background: var(--lang-soft); }
+.lyric .n { font-size: 1.4rem; }
+.lyric b { font-family: var(--font-display); font-size: 1.2rem; color: var(--lang); display: block; }
+.lyric small { color: var(--muted); }
+.note { background: var(--lang-soft); border-radius: 16px; padding: 12px 16px; font-size: .95rem; max-width: 560px; text-align: left; }
+
+/* stickers */
+.stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
+.sticker { aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; font-size: 2.4rem; background: var(--surface); border: 3px dashed var(--line); }
+.sticker.got { border: 3px solid var(--star); animation: pop .5s; }
+.sticker.no { opacity: .35; filter: grayscale(1); font-size: 1.4rem; }
+
+/* parent guide */
+.guide { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 22px 20px; display: grid; gap: 18px; }
+.guide p, .guide li { max-width: 68ch; }
+.guide ul, .guide ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.method { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: start; }
+.method .e { font-size: 2rem; width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--lang-soft); }
+.method h3 { margin-bottom: 2px; }
+.method p { color: var(--muted); }
+.method .where { font-size: .85rem; color: var(--ink); font-weight: 700; margin-top: 4px; }
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: .95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td.wk { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.refs { font-size: .88rem; color: var(--muted); }
+.refs a { color: var(--lang); }
+.switch { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.switch input { width: 22px; height: 22px; accent-color: var(--lang); }
+.foot { color: var(--muted); font-size: .85rem; text-align: center; }
+
+/* toast + burst */
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 14px; font-weight: 700; max-width: calc(100% - 32px); z-index: 20; }
+.burst { position: fixed; pointer-events: none; font-size: 2rem; z-index: 30; animation: fly 1s ease-out forwards; }
+@keyframes fly { to { transform: translate(var(--dx), var(--dy)) scale(.4) rotate(200deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap" id="app" aria-live="polite"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------------- Course content ---------------- */
+/* Each word: e = picture, en = English helper, mk = Macedonian (Cyrillic), tr = Latin
+   pronunciation helper for parents, es = Spanish. */
+const UNITS = [
+  { id: 'hello', icon: '👋', en: 'Hello & Manners', mkT: 'Здраво!', esT: '¡Hola!', words: [
+    { e: '👋', en: 'hello', mk: 'Здраво', tr: 'ZDRA-vo', es: 'Hola' },
+    { e: '🙋', en: 'goodbye', mk: 'Чао', tr: 'CHA-o', es: 'Adiós' },
+    { e: '🌅', en: 'good morning', mk: 'Добро утро', tr: 'DO-bro U-tro', es: 'Buenos días' },
+    { e: '🌙', en: 'good night', mk: 'Добра ноќ', tr: 'DO-bra noky', es: 'Buenas noches' },
+    { e: '🙏', en: 'please', mk: 'Те молам', tr: 'te MO-lam', es: 'Por favor' },
+    { e: '💐', en: 'thank you', mk: 'Благодарам', tr: 'bla-GO-da-ram', es: 'Gracias' },
+    { e: '👍', en: 'yes', mk: 'Да', tr: 'da', es: 'Sí' },
+    { e: '👎', en: 'no', mk: 'Не', tr: 'ne', es: 'No' },
+  ]},
+  { id: 'move', icon: '🤸', en: 'Move! (Do it)', mkT: 'Мрдај!', esT: '¡Muévete!', tpr: true, words: [
+    { e: '🦘', en: 'jump!', mk: 'Скокни!', tr: 'SKOK-ni', es: '¡Salta!' },
+    { e: '👏', en: 'clap!', mk: 'Плескај!', tr: 'PLES-kai', es: '¡Aplaude!' },
+    { e: '🪑', en: 'sit down!', mk: 'Седни!', tr: 'SED-ni', es: '¡Siéntate!' },
+    { e: '🧍', en: 'stand up!', mk: 'Стани!', tr: 'STA-ni', es: '¡Levántate!' },
+    { e: '💃', en: 'dance!', mk: 'Танцувај!', tr: 'tan-TSU-vai', es: '¡Baila!' },
+    { e: '🏃', en: 'run!', mk: 'Трчај!', tr: 'TR-chai', es: '¡Corre!' },
+    { e: '👋', en: 'wave!', mk: 'Мавтај!', tr: 'MAV-tai', es: '¡Saluda!' },
+    { e: '🌀', en: 'spin around!', mk: 'Врти се!', tr: 'VR-ti se', es: '¡Da vueltas!' },
+    { e: '😴', en: 'sleep!', mk: 'Спиј!', tr: 'spee', es: '¡Duerme!' },
+    { e: '👃', en: 'touch your nose!', mk: 'Допри го носот!', tr: 'DO-pri go NO-sot', es: '¡Tócate la nariz!' },
+  ]},
+  { id: 'colors', icon: '🎨', en: 'Colors', mkT: 'Бои', esT: 'Colores', words: [
+    { sw: '#E53935', en: 'red', mk: 'Црвено', tr: 'TSR-ve-no', es: 'Rojo' },
+    { sw: '#1E88E5', en: 'blue', mk: 'Сино', tr: 'SI-no', es: 'Azul' },
+    { sw: '#43A047', en: 'green', mk: 'Зелено', tr: 'ZE-le-no', es: 'Verde' },
+    { sw: '#FDD835', en: 'yellow', mk: 'Жолто', tr: 'ZHOL-to', es: 'Amarillo' },
+    { sw: '#FB8C00', en: 'orange', mk: 'Портокалово', tr: 'por-to-KA-lo-vo', es: 'Naranja' },
+    { sw: '#F06292', en: 'pink', mk: 'Розово', tr: 'RO-zo-vo', es: 'Rosa' },
+    { sw: '#8E24AA', en: 'purple', mk: 'Виолетово', tr: 'vi-o-LE-to-vo', es: 'Morado' },
+    { sw: '#212121', en: 'black', mk: 'Црно', tr: 'TSR-no', es: 'Negro' },
+    { sw: '#FFFFFF', en: 'white', mk: 'Бело', tr: 'BE-lo', es: 'Blanco' },
+  ]},
+  { id: 'numbers', icon: '🔢', en: 'Numbers 1–10', mkT: 'Броеви', esT: 'Números', words: [
+    { n: 1, en: 'one', mk: 'Еден', tr: 'E-den', es: 'Uno' },
+    { n: 2, en: 'two', mk: 'Два', tr: 'dva', es: 'Dos' },
+    { n: 3, en: 'three', mk: 'Три', tr: 'tri', es: 'Tres' },
+    { n: 4, en: 'four', mk: 'Четири', tr: 'CHE-ti-ri', es: 'Cuatro' },
+    { n: 5, en: 'five', mk: 'Пет', tr: 'pet', es: 'Cinco' },
+    { n: 6, en: 'six', mk: 'Шест', tr: 'shest', es: 'Seis' },
+    { n: 7, en: 'seven', mk: 'Седум', tr: 'SE-dum', es: 'Siete' },
+    { n: 8, en: 'eight', mk: 'Осум', tr: 'O-sum', es: 'Ocho' },
+    { n: 9, en: 'nine', mk: 'Девет', tr: 'DE-vet', es: 'Nueve' },
+    { n: 10, en: 'ten', mk: 'Десет', tr: 'DE-set', es: 'Diez' },
+  ]},
+  { id: 'animals', icon: '🐾', en: 'Animals', mkT: 'Животни', esT: 'Animales', words: [
+    { e: '🐶', en: 'dog', mk: 'Куче', tr: 'KU-che', es: 'Perro' },
+    { e: '🐱', en: 'cat', mk: 'Мачка', tr: 'MACH-ka', es: 'Gato' },
+    { e: '🐦', en: 'bird', mk: 'Птица', tr: 'PTI-tsa', es: 'Pájaro' },
+    { e: '🐟', en: 'fish', mk: 'Риба', tr: 'RI-ba', es: 'Pez' },
+    { e: '🐴', en: 'horse', mk: 'Коњ', tr: 'kony', es: 'Caballo' },
+    { e: '🐮', en: 'cow', mk: 'Крава', tr: 'KRA-va', es: 'Vaca' },
+    { e: '🐰', en: 'rabbit', mk: 'Зајак', tr: 'ZA-yak', es: 'Conejo' },
+    { e: '🐻', en: 'bear', mk: 'Мечка', tr: 'MECH-ka', es: 'Oso' },
+    { e: '🦁', en: 'lion', mk: 'Лав', tr: 'lav', es: 'León' },
+    { e: '🦆', en: 'duck', mk: 'Патка', tr: 'PAT-ka', es: 'Pato' },
+  ]},
+  { id: 'family', icon: '🏡', en: 'Family', mkT: 'Семејство', esT: 'Familia', words: [
+    { e: '👩', en: 'mom', mk: 'Мама', tr: 'MA-ma', es: 'Mamá' },
+    { e: '👨', en: 'dad', mk: 'Тато', tr: 'TA-to', es: 'Papá' },
+    { e: '👵', en: 'grandma', mk: 'Баба', tr: 'BA-ba', es: 'Abuela' },
+    { e: '👴', en: 'grandpa', mk: 'Дедо', tr: 'DE-do', es: 'Abuelo' },
+    { e: '👦', en: 'brother', mk: 'Брат', tr: 'brat', es: 'Hermano' },
+    { e: '👧', en: 'sister', mk: 'Сестра', tr: 'SES-tra', es: 'Hermana' },
+    { e: '👶', en: 'baby', mk: 'Бебе', tr: 'BE-be', es: 'Bebé' },
+  ]},
+  { id: 'food', icon: '🍎', en: 'Food & Drink', mkT: 'Храна', esT: 'Comida', words: [
+    { e: '🍎', en: 'apple', mk: 'Јаболко', tr: 'YA-bol-ko', es: 'Manzana' },
+    { e: '🍌', en: 'banana', mk: 'Банана', tr: 'ba-NA-na', es: 'Plátano' },
+    { e: '🍞', en: 'bread', mk: 'Леб', tr: 'leb', es: 'Pan' },
+    { e: '🥛', en: 'milk', mk: 'Млеко', tr: 'MLE-ko', es: 'Leche' },
+    { e: '💧', en: 'water', mk: 'Вода', tr: 'VO-da', es: 'Agua' },
+    { e: '🧀', en: 'cheese', mk: 'Сирење', tr: 'SI-re-nye', es: 'Queso' },
+    { e: '🥚', en: 'egg', mk: 'Јајце', tr: 'YAI-tse', es: 'Huevo' },
+    { e: '🍰', en: 'cake', mk: 'Торта', tr: 'TOR-ta', es: 'Pastel' },
+  ]},
+  { id: 'body', icon: '🙆', en: 'My Body', mkT: 'Телото', esT: 'El cuerpo', words: [
+    { e: '🙆', en: 'head', mk: 'Глава', tr: 'GLA-va', es: 'Cabeza' },
+    { e: '👀', en: 'eyes', mk: 'Очи', tr: 'O-chi', es: 'Ojos' },
+    { e: '👃', en: 'nose', mk: 'Нос', tr: 'nos', es: 'Nariz' },
+    { e: '👄', en: 'mouth', mk: 'Уста', tr: 'US-ta', es: 'Boca' },
+    { e: '👂', en: 'ears', mk: 'Уши', tr: 'U-shi', es: 'Orejas' },
+    { e: '👐', en: 'hands', mk: 'Раце', tr: 'RA-tse', es: 'Manos' },
+    { e: '🦵', en: 'legs', mk: 'Нозе', tr: 'NO-ze', es: 'Piernas' },
+    { e: '🦷', en: 'teeth', mk: 'Заби', tr: 'ZA-bi', es: 'Dientes' },
+  ]},
+  { id: 'feel', icon: '😊', en: 'Feelings', mkT: 'Чувства', esT: 'Sentimientos', words: [
+    { e: '😊', en: 'I am happy', mk: 'Среќен сум', tr: 'SRE-kyen sum', es: 'Estoy feliz' },
+    { e: '😢', en: 'I am sad', mk: 'Тажен сум', tr: 'TA-zhen sum', es: 'Estoy triste' },
+    { e: '😠', en: 'I am angry', mk: 'Лут сум', tr: 'lut sum', es: 'Estoy enojado' },
+    { e: '🥱', en: 'I am tired', mk: 'Уморен сум', tr: 'U-mo-ren sum', es: 'Estoy cansado' },
+    { e: '😨', en: 'I am scared', mk: 'Исплашен сум', tr: 'IS-pla-shen sum', es: 'Tengo miedo' },
+    { e: '😋', en: 'I am hungry', mk: 'Гладен сум', tr: 'GLA-den sum', es: 'Tengo hambre' },
+  ]},
+];
+
+const STORIES = [
+  { id: 'cat', icon: '🐱', en: 'The Little Cat', mkT: 'Малата мачка', esT: 'El gatito', pages: [
+    { s: '🐱', mk: 'Види! Мачка.', tr: 'VI-di! MACH-ka.', es: '¡Mira! Un gato.', en: 'Look! A cat.' },
+    { s: '🐈‍⬛', mk: 'Мачката е црна.', tr: 'MACH-ka-ta e TSR-na.', es: 'El gato es negro.', en: 'The cat is black.' },
+    { s: '🐈‍⬛ 👀 🐟', mk: 'Мачката гледа риба.', tr: 'MACH-ka-ta GLE-da RI-ba.', es: 'El gato ve un pez.', en: 'The cat sees a fish.' },
+    { s: '🐠', mk: 'Рибата е портокалова.', tr: 'RI-ba-ta e por-to-KA-lo-va.', es: 'El pez es naranja.', en: 'The fish is orange.' },
+    { s: '🐈‍⬛ 👋 🐠', mk: 'Здраво, рибо!', tr: 'ZDRA-vo, RI-bo!', es: '¡Hola, pez!', en: 'Hello, fish!' },
+    { s: '😺', mk: 'Мачката е среќна.', tr: 'MACH-ka-ta e SRE-kyna.', es: 'El gato está feliz.', en: 'The cat is happy.' },
+  ]},
+  { id: 'breakfast', icon: '🥛', en: 'Breakfast with Mom', mkT: 'Појадок со мама', esT: 'Desayuno con mamá', pages: [
+    { s: '🌅 👩', mk: 'Добро утро, мамо!', tr: 'DO-bro U-tro, MA-mo!', es: '¡Buenos días, mamá!', en: 'Good morning, Mom!' },
+    { s: '🥛', mk: 'Еве млеко.', tr: 'E-ve MLE-ko.', es: 'Aquí tienes leche.', en: 'Here is some milk.' },
+    { s: '🍞', mk: 'Еве леб.', tr: 'E-ve leb.', es: 'Aquí tienes pan.', en: 'Here is some bread.' },
+    { s: '🥚 🥚', mk: 'Едно јајце, две јајца.', tr: 'ED-no YAI-tse, dve YAI-tsa.', es: 'Un huevo, dos huevos.', en: 'One egg, two eggs.' },
+    { s: '😋', mk: 'Ммм, вкусно!', tr: 'mmm, VKUS-no!', es: '¡Mmm, qué rico!', en: 'Mmm, yummy!' },
+    { s: '💐 👩', mk: 'Благодарам, мамо!', tr: 'bla-GO-da-ram, MA-mo!', es: '¡Gracias, mamá!', en: 'Thank you, Mom!' },
+  ]},
+  { id: 'ducks', icon: '🦆', en: 'Count with the Bear', mkT: 'Брои со мечката', esT: 'Cuenta con el oso', pages: [
+    { s: '🐻', mk: 'Мечката брои.', tr: 'MECH-ka-ta BRO-i.', es: 'El oso cuenta.', en: 'The bear counts.' },
+    { s: '1️⃣ 2️⃣ 3️⃣', mk: 'Еден, два, три!', tr: 'E-den, dva, tri!', es: '¡Uno, dos, tres!', en: 'One, two, three!' },
+    { s: '🦆 🦆 🦆', mk: 'Три патки.', tr: 'tri PAT-ki.', es: 'Tres patos.', en: 'Three ducks.' },
+    { s: '🦆⬆️', mk: 'Патките скокаат!', tr: 'PAT-ki-te SKO-ka-at!', es: '¡Los patos saltan!', en: 'The ducks jump!' },
+    { s: '🦘 🦆', mk: 'Скокни со патките!', tr: 'SKOK-ni so PAT-ki-te!', es: '¡Salta con los patos!', en: 'Jump with the ducks! (Get up and jump!)' },
+    { s: '👋 🦆🦆🦆', mk: 'Чао, патки!', tr: 'CHA-o, PAT-ki!', es: '¡Adiós, patos!', en: 'Bye-bye, ducks!' },
+  ]},
+];
+
+const SONGS = [
+  { id: 'head', icon: '🙆', en: 'Head, Shoulders, Knees & Toes', tune: 'Sing to the tune of "Head, Shoulders, Knees and Toes". Touch each body part as you sing it.', lines: [
+    { e: '🙆', mk: 'Глава, рамена, колена, прсти,', es: 'Cabeza, hombros, rodillas y pies,', en: 'Head, shoulders, knees and toes,' },
+    { e: '🦵', mk: 'колена, прсти!', es: 'rodillas y pies,', en: 'knees and toes!' },
+    { e: '🙆', mk: 'Глава, рамена, колена, прсти,', es: 'cabeza, hombros, rodillas y pies,', en: 'Head, shoulders, knees and toes,' },
+    { e: '🦵', mk: 'колена, прсти!', es: 'rodillas y pies,', en: 'knees and toes!' },
+    { e: '👀', mk: 'Очи, уши, уста, нос,', es: 'ojos, orejas, boca y nariz,', en: 'Eyes and ears and mouth and nose,' },
+    { e: '👏', mk: 'глава, рамена, колена, прсти!', es: 'cabeza, hombros, rodillas y pies.', en: 'Head, shoulders, knees and toes!' },
+  ]},
+  { id: 'count', icon: '🦆', en: 'Ten Little Ducks', tune: 'Sing to the tune of "Ten Little Fingers". Hold up one finger for each number.', lines: [
+    { e: '☝️', mk: 'Еден, два, три мали патки,', es: 'Uno, dos, tres patitos,', en: 'One, two, three little ducks,' },
+    { e: '🖐️', mk: 'четири, пет, шест мали патки,', es: 'cuatro, cinco, seis patitos,', en: 'four, five, six little ducks,' },
+    { e: '✌️', mk: 'седум, осум, девет мали патки,', es: 'siete, ocho, nueve patitos,', en: 'seven, eight, nine little ducks,' },
+    { e: '🙌', mk: 'десет мали патки! Ква-ква!', es: '¡diez patitos! ¡Cuac, cuac!', en: 'ten little ducks! Quack, quack!' },
+  ]},
+  { id: 'hello', icon: '👋', en: 'Hello Song', tune: 'Sing to the tune of "Frère Jacques / Are You Sleeping". Wave on every "hello".', lines: [
+    { e: '👋', mk: 'Здраво, здраво,', es: 'Hola, hola,', en: 'Hello, hello,' },
+    { e: '👋', mk: 'здраво, здраво,', es: 'hola, hola,', en: 'hello, hello,' },
+    { e: '😊', mk: 'како си? Како си?', es: '¿cómo estás? ¿Cómo estás?', en: 'how are you? how are you?' },
+    { e: '👍', mk: 'Добро сум, благодарам!', es: '¡Muy bien, gracias!', en: 'I am fine, thank you!' },
+    { e: '👍', mk: 'Добро сум, благодарам!', es: '¡Muy bien, gracias!', en: 'I am fine, thank you!' },
+    { e: '🙋', mk: 'Чао, чао! Чао, чао!', es: '¡Adiós, adiós! ¡Adiós, adiós!', en: 'Bye-bye! Bye-bye!' },
+  ]},
+];
+
+const L = {
+  mk: { name: 'Македонски', en: 'Macedonian', mascot: '☀️', guide: 'Sonce the Sun', praise: ['Браво!', 'Супер!', 'Одлично!'], again: 'Обиди се пак!', listen: 'Слушај!', where: 'Каде е?', yourTurn: 'Кажи!', doIt: 'Направи!' },
+  es: { name: 'Español', en: 'Spanish', mascot: '🐬', guide: 'Delfi the Dolphin', praise: ['¡Muy bien!', '¡Genial!', '¡Excelente!'], again: '¡Otra vez!', listen: '¡Escucha!', where: '¿Dónde está?', yourTurn: '¡Dilo!', doIt: '¡Hazlo!' },
+};
+const STICKERS = ['🦄','🐸','🐼','🦊','🐙','🦋','🐢','🐝','🦒','🐧','🐳','🦓','🐨','🦔','🐞','🦜','🐿️','🦩','🐊','🦀','🐌','🦖','🐘','🐯','🌈','🚀','🎈','🍓','🌻','⭐'];
+const INTERVALS = [0, 1, 2, 4, 7, 14]; // days per Leitner box
+
+/* ---------------- Progress (per device) ---------------- */
+const KEY = 'zdravo-hola-v1';
+let P = { stars: 0, stickers: 0, srs: {}, done: {}, english: true, lang: 'mk' };
+try { const raw = localStorage.getItem(KEY); if (raw) P = Object.assign(P, JSON.parse(raw)); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} }
+
+const S = { lang: P.lang || 'mk', screen: 'home', arg: null };
+const DAY = 86400000;
+const now = () => Date.now();
+const w = (x) => x[S.lang];
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = (sel, root = document) => root.querySelector(sel);
+
+function pic(word, cls = '') {
+  if (word.sw) return `<span class="swatch ${cls}" style="background:${word.sw}" aria-label="${esc(word.en)}"></span>`;
+  if (word.n) return `<span class="numeral ${cls}" aria-label="${word.n}"><b>${word.n}</b><span>${'●'.repeat(word.n)}</span></span>`;
+  return `<span class="${cls}" aria-hidden="true">${word.e}</span>`;
+}
+function srsKey(unitId, i) { return `${S.lang}:${unitId}:${i}`; }
+function meet(unitId, i) {
+  const k = srsKey(unitId, i);
+  if (!P.srs[k]) { P.srs[k] = { box: 1, due: now() + DAY }; save(); }
+}
+function grade(unitId, i, ok) {
+  const k = srsKey(unitId, i);
+  const c = P.srs[k] || { box: 0, due: 0 };
+  c.box = ok ? Math.min(c.box + 1, INTERVALS.length - 1) : 1;
+  c.due = ok ? now() + INTERVALS[c.box] * DAY : now();
+  P.srs[k] = c; save();
+}
+function dueWords() {
+  const out = [];
+  for (const u of UNITS) u.words.forEach((wd, i) => {
+    const c = P.srs[srsKey(u.id, i)];
+    if (c && c.due <= now()) out.push({ u, i, wd });
+  });
+  return out;
+}
+function learnedCount() { return Object.keys(P.srs).filter((k) => k.startsWith(S.lang + ':')).length; }
+function markDone(id) { P.done[S.lang + ':' + id] = true; save(); }
+function isDone(id) { return !!P.done[S.lang + ':' + id]; }
+
+/* ---------------- Voice ---------------- */
+let voices = [];
+function loadVoices() { try { voices = speechSynthesis.getVoices(); } catch (e) { voices = []; } }
+if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+let warned = false;
+function voiceFor(lang) {
+  // Macedonian voices are rare; Serbian and Bulgarian read Cyrillic closest.
+  const prefs = lang === 'mk' ? ['mk', 'sr', 'bg', 'ru'] : ['es'];
+  for (const p of prefs) { const v = voices.find((x) => x.lang && x.lang.toLowerCase().startsWith(p)); if (v) return v; }
+  return null;
+}
+function speak(text, opts = {}) {
+  const lang = opts.lang || S.lang;
+  if (!voices.length) loadVoices();
+  if (!('speechSynthesis' in window)) { if (!warned) { toast('This browser has no voice. Read the word aloud with the pronunciation helper.'); warned = true; } opts.onend && setTimeout(opts.onend, 900); return; }
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[¡!¿?]/g, (c) => (c === '!' || c === '?' ? c : '')));
+    const v = voiceFor(lang);
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = lang === 'mk' ? 'mk-MK' : 'es-ES'; }
+    if (lang === 'mk' && voices.length && (!v || !v.lang.toLowerCase().startsWith('mk')) && !warned) {
+      toast('No Macedonian voice on this device, so a close Slavic voice is used. Your own voice is best: read the pink helper spelling!');
+      warned = true;
+    }
+    u.rate = opts.rate || 0.8; u.pitch = 1.1;
+    if (opts.onend) u.onend = opts.onend;
+    speechSynthesis.speak(u);
+  } catch (e) { opts.onend && setTimeout(opts.onend, 900); }
+}
+function speakSeq(list, onLine, done) {
+  let i = 0;
+  const next = () => { if (i >= list.length) { done && done(); return; } onLine && onLine(i); speak(list[i], { rate: 0.75, onend: () => { i++; setTimeout(next, 350); } }); };
+  next();
+}
+
+/* ---------------- Rewards ---------------- */
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3800); }
+function burst(x, y, chars = ['⭐', '🌟', '✨']) {
+  for (let i = 0; i < 10; i++) {
+    const s = document.createElement('span'); s.className = 'burst'; s.textContent = pick(chars);
+    s.style.left = x + 'px'; s.style.top = y + 'px';
+    s.style.setProperty('--dx', (Math.random() * 240 - 120) + 'px'); s.style.setProperty('--dy', (Math.random() * -220 - 20) + 'px');
+    document.body.appendChild(s); setTimeout(() => s.remove(), 1100);
+  }
+}
+function addStars(n, el) {
+  const before = Math.floor(P.stars / 5);
+  P.stars += n; save();
+  if (el) { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
+  if (Math.floor(P.stars / 5) > before && P.stickers < STICKERS.length) {
+    P.stickers++; save();
+    setTimeout(() => toast(`New sticker! ${STICKERS[P.stickers - 1]}  Open "Stickers" to see it.`), 600);
+  }
+  const sc = $('#starCount'); if (sc) sc.textContent = P.stars;
+}
+
+/* ---------------- Screens ---------------- */
+function go(screen, arg) { try { speechSynthesis.cancel(); } catch (e) {} S.screen = screen; S.arg = arg; render(); window.scrollTo(0, 0); }
+function setLang(l) { S.lang = l; P.lang = l; save(); render(); speak(l === 'mk' ? 'Здраво!' : '¡Hola!'); }
+
+function header() {
+  return `<div class="bar">
+    <div class="brand"><span class="sun" aria-hidden="true">${L[S.lang].mascot}</span>
+      <div><h1>Zdravo &amp; Hola</h1><small>Macedonian &amp; Spanish for little explorers</small></div></div>
+    <div class="pills">
+      <span class="pill star" title="Stars">★ <span class="t" id="starCount">${P.stars}</span></span>
+      <button class="pill" data-go="stickers">🏅 Stickers</button>
+      <button class="pill" data-go="guide">👪 Grown-ups</button>
+    </div></div>`;
+}
+function topbar(title, sub) {
+  return `<div class="top"><button class="back" data-go="${sub || 'home'}" aria-label="Back">←</button><h2>${title}</h2>
+    <span class="pill star">★ <span class="t" id="starCount">${P.stars}</span></span></div>`;
+}
+
+function homeScreen() {
+  const due = dueWords().length;
+  const lc = learnedCount();
+  return `${header()}
+  <div class="langs" role="group" aria-label="Choose a language">
+    <button class="lang-btn mk" data-lang="mk" aria-pressed="${S.lang === 'mk'}"><span class="m">☀️</span><span><b>Македонски</b><span class="s">Macedonian · with Sonce</span></span></button>
+    <button class="lang-btn es" data-lang="es" aria-pressed="${S.lang === 'es'}"><span class="m">🐬</span><span><b>Español</b><span class="s">Spanish · with Delfi</span></span></button>
+  </div>
+  <div class="row">
+    <button class="hero-tile" data-go="review"><span class="e">🔁</span><span><b>Today's warm-up</b><span>${due ? `${due} word${due > 1 ? 's' : ''} ready to practise again` : lc ? 'All caught up. Play a quick game anyway!' : 'Start with a topic below, then come back tomorrow'}</span></span></button>
+    <button class="hero-tile" data-go="tpr" data-arg="move" style="background:var(--good)"><span class="e">🤸</span><span><b>${L[S.lang].doIt} Move game</b><span>Listen, then do it with your body</span></span></button>
+  </div>
+  <p class="section-label">Topics · ${lc} words met in ${L[S.lang].en}</p>
+  <div class="grid">${UNITS.map((u) => `<button class="tile" data-go="unit" data-arg="${u.id}"><span class="e">${u.icon}</span><b>${S.lang === 'mk' ? u.mkT : u.esT}</b><small>${u.en}</small><span class="stars">${['learn','find','match'].map((a) => isDone(u.id + ':' + a) ? '★' : '☆').join('')}</span></button>`).join('')}</div>
+  <p class="section-label">Stories</p>
+  <div class="grid">${STORIES.map((s) => `<button class="tile" data-go="story" data-arg="${s.id}"><span class="e">${s.icon}</span><b>${S.lang === 'mk' ? s.mkT : s.esT}</b><small>${s.en}</small><span class="stars">${isDone('story:' + s.id) ? '★' : ''}</span></button>`).join('')}</div>
+  <p class="section-label">Songs</p>
+  <div class="grid">${SONGS.map((s) => `<button class="tile" data-go="song" data-arg="${s.id}"><span class="e">${s.icon}</span><b>${esc(s.en)}</b><small>Sing &amp; move</small><span class="stars">${isDone('song:' + s.id) ? '★' : ''}</span></button>`).join('')}</div>
+  <p class="foot">About 15 minutes a day, played together, works better than a long session once a week. Tap “Grown-ups” for the plan.</p>`;
+}
+
+function unitScreen(id) {
+  const u = UNITS.find((x) => x.id === id);
+  const acts = [
+    ['learn', '👀', 'Look & Listen', 'Meet the words'],
+    ['find', '👂', L[S.lang].where, 'Hear it, find it'],
+    ['match', '🧠', 'Memory', 'Match picture and word'],
+    ['tpr', '🤸', L[S.lang].doIt, 'Act it out'],
+  ];
+  return `${topbar(`${u.icon} ${S.lang === 'mk' ? u.mkT : u.esT}`)}
+  <p class="en" style="text-align:left">${u.en}</p>
+  <div class="grid">${acts.map(([a, e, t, s]) => `<button class="tile" data-go="${a}" data-arg="${u.id}"><span class="e">${e}</span><b>${esc(t)}</b><small>${s}</small><span class="stars">${isDone(u.id + ':' + a) ? '★' : ''}</span></button>`).join('')}</div>
+  <div class="note"><b>Grown-up tip:</b> ${tipFor(u.id)}</div>`;
+}
+function tipFor(id) {
+  return {
+    hello: 'Use these all day: greet your child with the new “good morning” at breakfast and “good night” at bedtime, every day this week.',
+    move: 'This is Total Physical Response. Say the command, do it together first, then let your child do it alone. Swap roles so your child gives you orders!',
+    colors: 'Play “I spy” around the house: point at something red and say only the new word. Let your child find the next one.',
+    numbers: 'Count stairs, grapes and jumps out loud in the new language. Fingers up for each number.',
+    animals: 'Make the animal sound after each word. Read a picture book and name the animals only in the new language.',
+    family: 'Look at family photos together and name everyone with the new words.',
+    food: 'At meals, offer choices in the new language: hold up two foods and let your child answer with a word.',
+    body: 'Sing the “Head, Shoulders” song from the Songs shelf. Touch each part as you say it.',
+    feel: 'At bedtime, ask how the day felt and answer with your own feeling phrase first. For a girl, Macedonian adds -a (среќна, тажна) and Spanish uses enojada, cansada.',
+  }[id];
+}
+
+/* Look & Listen: one card at a time, then the child says it back */
+function learnScreen(id, i = 0) {
+  const u = UNITS.find((x) => x.id === id);
+  const wd = u.words[i];
+  meet(u.id, i);
+  const app = $('#app');
+  app.innerHTML = `${topbar('👀 Look & Listen', 'unit" data-arg="' + u.id)}
+  <div class="stage">
+    <div class="dots">${u.words.map((_, k) => `<i class="${k === i ? 'on' : k < i ? 'done' : ''}"></i>`).join('')}</div>
+    <div class="big-e">${pic(wd)}</div>
+    <div class="word">${esc(w(wd))}</div>
+    ${S.lang === 'mk' ? `<div class="tr">say: ${esc(wd.tr)}</div>` : ''}
+    ${P.english ? `<div class="en">${esc(wd.en)}</div>` : ''}
+    <button class="speak pulse" id="say" aria-label="Hear it">🔊</button>
+    <div class="btns">
+      <button class="btn" id="prev" ${i === 0 ? 'disabled' : ''}>◀ Back</button>
+      <button class="btn good" id="said">🗣️ ${L[S.lang].yourTurn} I said it!</button>
+      <button class="btn primary" id="next">${i === u.words.length - 1 ? 'Finish ★' : 'Next ▶'}</button>
+    </div>
+  </div>`;
+  const say = () => speak(w(wd));
+  $('#say').onclick = say;
+  setTimeout(say, 250);
+  $('#prev').onclick = () => learnScreen(id, i - 1);
+  $('#said').onclick = (e) => { addStars(1, e.currentTarget); speak(pick(L[S.lang].praise)); e.currentTarget.disabled = true; };
+  $('#next').onclick = (e) => {
+    if (i < u.words.length - 1) learnScreen(id, i + 1);
+    else { markDone(u.id + ':learn'); addStars(2, e.currentTarget); speak(pick(L[S.lang].praise)); setTimeout(() => go('find', u.id), 900); }
+  };
+  bindGo(app);
+}
+
+/* Listen & Find: hear the word, tap the right picture (3 choices, kind feedback) */
+function findGame(pool, { title, back, onFinish, review }) {
+  const rounds = shuffle(pool).slice(0, Math.min(6, pool.length));
+  let r = 0, firstTry = true;
+  const app = $('#app');
+  const round = () => {
+    const t = rounds[r];
+    const others = shuffle((review ? UNITS.find((x) => x === t.u).words : pool.map((p) => p.wd)).filter((x) => x !== t.wd)).slice(0, 2);
+    const opts = shuffle([t.wd, ...others]);
+    firstTry = true;
+    app.innerHTML = `${topbar(title, back)}
+    <div class="stage">
+      <div class="dots">${rounds.map((_, k) => `<i class="${k === r ? 'on' : k < r ? 'done' : ''}"></i>`).join('')}</div>
+      <p class="line">${L[S.lang].listen} ${L[S.lang].where}</p>
+      <button class="speak pulse" id="say" aria-label="Hear the word again">👂</button>
+      <div class="choices">${opts.map((o, k) => `<button class="choice" data-k="${k}" aria-label="${esc(o.en)}">${pic(o)}</button>`).join('')}</div>
+      <p class="en">${P.english ? 'Tap the picture you hear. Tap the ear to hear it again.' : ''}</p>
+    </div>`;
+    bindGo(app);
+    const say = () => speak(w(t.wd));
+    $('#say').onclick = say; setTimeout(say, 300);
+    app.querySelectorAll('.choice').forEach((b) => b.onclick = () => {
+      const o = opts[+b.dataset.k];
+      if (o === t.wd) {
+        b.classList.add('right');
+        grade(t.u.id, t.i, firstTry);
+        if (firstTry) addStars(1, b);
+        app.querySelectorAll('.choice').forEach((x) => x.disabled = true);
+        // advance once, on speech end or after a fallback delay (some devices never fire onend)
+        let moved = false;
+        const go1 = () => { if (!moved) { moved = true; next(); } };
+        speak(`${pick(L[S.lang].praise)} ${w(t.wd)}`, { onend: () => setTimeout(go1, 300) });
+        setTimeout(go1, 3500);
+      } else {
+        firstTry = false;
+        b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+        speak(`${L[S.lang].again} ${w(t.wd)}`);
+      }
+    });
+  };
+  const next = () => { r++; if (r < rounds.length) round(); else onFinish(); };
+  round();
+}
+function findScreen(id) {
+  const u = UNITS.find((x) => x.id === id);
+  u.words.forEach((_, i) => meet(u.id, i));
+  findGame(u.words.map((wd, i) => ({ u, i, wd })), {
+    title: `👂 ${L[S.lang].where}`, back: 'unit" data-arg="' + u.id,
+    onFinish: () => { markDone(u.id + ':find'); celebrate('All found!', () => go('unit', u.id)); },
+  });
+}
+function reviewScreen() {
+  let pool = dueWords();
+  let note = '';
+  if (!pool.length) {
+    // nothing due: practise a mix of words already met (or the first topic for brand-new players)
+    const met = [];
+    for (const u of UNITS) u.words.forEach((wd, i) => { if (P.srs[srsKey(u.id, i)]) met.push({ u, i, wd }); });
+    pool = met.length >= 3 ? met : UNITS[0].words.map((wd, i) => ({ u: UNITS[0], i, wd }));
+    note = 'extra';
+  }
+  findGame(pool, {
+    title: '🔁 Warm-up', back: 'home', review: true,
+    onFinish: () => celebrate(note ? 'Great practice!' : 'Warm-up done! See you tomorrow.', () => go('home')),
+  });
+}
+
+/* Memory: flip two cards, a picture and its word */
+function matchScreen(id) {
+  const u = UNITS.find((x) => x.id === id);
+  const chosen = shuffle(u.words.map((wd, i) => ({ wd, i }))).slice(0, 4);
+  const cards = shuffle(chosen.flatMap((c) => [{ ...c, kind: 'pic' }, { ...c, kind: 'word' }]));
+  let open = [], matched = 0, lock = false;
+  const app = $('#app');
+  app.innerHTML = `${topbar('🧠 Memory', 'unit" data-arg="' + u.id)}
+  <div class="stage">
+    <p class="line">Find the pairs!</p>
+    <div class="memory">${cards.map((c, k) => `<button class="card" data-k="${k}" aria-label="Card ${k + 1}">?</button>`).join('')}</div>
+    <p class="en">${P.english ? 'Each word card speaks when it flips. Match it to its picture.' : ''}</p>
+  </div>`;
+  bindGo(app);
+  app.querySelectorAll('.card').forEach((b) => b.onclick = () => {
+    const c = cards[+b.dataset.k];
+    if (lock || b.classList.contains('open')) return;
+    b.classList.add('open');
+    b.innerHTML = c.kind === 'pic' ? `<span class="pic">${pic(c.wd)}</span>` : `<span class="w">${esc(w(c.wd))}</span>`;
+    if (c.kind === 'word') speak(w(c.wd));
+    open.push(b);
+    if (open.length === 2) {
+      const [a, z] = open.map((x) => cards[+x.dataset.k]);
+      if (a.i === z.i && a.kind !== z.kind) {
+        open.forEach((x) => x.classList.add('done')); open = []; matched++;
+        speak(w(a.wd)); addStars(1, b); grade(u.id, a.i, true);
+        if (matched === chosen.length) { markDone(u.id + ':match'); setTimeout(() => celebrate('All pairs found!', () => go('unit', u.id)), 900); }
+      } else {
+        lock = true;
+        setTimeout(() => { open.forEach((x) => { x.classList.remove('open'); x.textContent = '?'; }); open = []; lock = false; }, 1100);
+      }
+    }
+  });
+}
+
+/* Do it! (Total Physical Response): listen first, act, then see the picture */
+function tprScreen(id, i = 0, order) {
+  const u = UNITS.find((x) => x.id === id);
+  order = order || shuffle(u.words.map((_, k) => k)).slice(0, Math.min(6, u.words.length));
+  const wd = u.words[order[i]];
+  meet(u.id, order[i]);
+  const isMove = !!u.tpr;
+  const prompt = isMove ? w(wd) : (S.lang === 'mk' ? `Покажи: ${w(wd)}!` : `¡Señala: ${w(wd)}!`);
+  const app = $('#app');
+  app.innerHTML = `${topbar(`🤸 ${L[S.lang].doIt}`, isMove ? 'home' : 'unit" data-arg="' + u.id)}
+  <div class="stage">
+    <div class="dots">${order.map((_, k) => `<i class="${k === i ? 'on' : k < i ? 'done' : ''}"></i>`).join('')}</div>
+    <p class="line">${L[S.lang].listen}</p>
+    <button class="speak pulse" id="say" aria-label="Hear it again">🔊</button>
+    <div class="big-e" id="reveal" style="visibility:hidden">${pic(wd)}</div>
+    <div class="word" id="rword" style="visibility:hidden">${esc(prompt)}</div>
+    ${P.english ? `<p class="en" id="hint">${isMove ? 'Grown-up: do the action together the first time, then let your child try alone.' : 'Point to it, show it, or bring it. Then tap “We did it!”.'}</p>` : ''}
+    <div class="btns">
+      <button class="btn" id="show">👀 Show me</button>
+      <button class="btn good" id="did">✅ We did it!</button>
+    </div>
+  </div>`;
+  bindGo(app);
+  const say = () => speak(prompt);
+  $('#say').onclick = say; setTimeout(say, 300);
+  const reveal = () => { $('#reveal').style.visibility = 'visible'; $('#rword').style.visibility = 'visible'; };
+  $('#show').onclick = () => { reveal(); say(); };
+  $('#did').onclick = (e) => {
+    reveal(); addStars(1, e.currentTarget); grade(u.id, order[i], true); speak(pick(L[S.lang].praise));
+    setTimeout(() => { if (i < order.length - 1) tprScreen(id, i + 1, order); else { markDone(u.id + ':tpr'); celebrate('What a mover!', () => go(isMove ? 'home' : 'unit', u.id)); } }, 1100);
+  };
+}
+
+/* Story time: comprehensible input, one sentence per page */
+function storyScreen(id, i = 0) {
+  const s = STORIES.find((x) => x.id === id);
+  const pg = s.pages[i];
+  const app = $('#app');
+  app.innerHTML = `${topbar(`📖 ${S.lang === 'mk' ? s.mkT : s.esT}`)}
+  <div class="stage">
+    <div class="dots">${s.pages.map((_, k) => `<i class="${k === i ? 'on' : k < i ? 'done' : ''}"></i>`).join('')}</div>
+    <div class="big-e" style="font-size:clamp(4rem,18vw,7rem)">${pg.s}</div>
+    <p class="line">${esc(w(pg))}</p>
+    ${S.lang === 'mk' ? `<div class="tr">say: ${esc(pg.tr)}</div>` : ''}
+    <button class="speak" id="say" aria-label="Read it to me">🔊</button>
+    ${P.english ? `<details class="en"><summary>Grown-up: what does it mean?</summary>${esc(pg.en)}</details>` : ''}
+    <div class="btns">
+      <button class="btn" id="prev" ${i === 0 ? 'disabled' : ''}>◀ Back</button>
+      <button class="btn primary" id="next">${i === s.pages.length - 1 ? 'The end ★' : 'Next page ▶'}</button>
+    </div>
+  </div>
+  <div class="note"><b>Read it like a picture book:</b> point at the pictures while the sentence plays, then ask your child to point (“${L[S.lang].where}” means “Where is it?”). Re-read favourite stories many times. Repetition is how children learn.</div>`;
+  bindGo(app);
+  const say = () => speak(w(pg), { rate: 0.75 });
+  $('#say').onclick = say; setTimeout(say, 300);
+  $('#prev').onclick = () => storyScreen(id, i - 1);
+  $('#next').onclick = (e) => {
+    if (i < s.pages.length - 1) storyScreen(id, i + 1);
+    else { markDone('story:' + s.id); addStars(3, e.currentTarget); celebrate(S.lang === 'mk' ? 'Крај!' : '¡Fin!', () => go('home')); }
+  };
+}
+
+/* Songs: rhythm and melody make phrases stick */
+function songScreen(id) {
+  const s = SONGS.find((x) => x.id === id);
+  const app = $('#app');
+  app.innerHTML = `${topbar(`🎵 ${esc(s.en)}`)}
+  <div class="stage">
+    <div class="note">🎶 ${esc(s.tune)}</div>
+    <div class="btns"><button class="btn primary" id="all">▶ Play all lines</button></div>
+    <div class="lyrics">${s.lines.map((l, k) => `<button class="lyric" data-k="${k}"><span class="n">${l.e}</span><span><b>${esc(w(l))}</b>${P.english ? `<small>${esc(l.en)}</small>` : ''}</span></button>`).join('')}</div>
+    <button class="btn good" id="sang">⭐ We sang it!</button>
+  </div>`;
+  bindGo(app);
+  const hl = (k) => app.querySelectorAll('.lyric').forEach((x, j) => x.classList.toggle('now', j === k));
+  app.querySelectorAll('.lyric').forEach((b) => b.onclick = () => { hl(+b.dataset.k); speak(w(s.lines[+b.dataset.k]), { rate: 0.75 }); });
+  $('#all').onclick = () => speakSeq(s.lines.map(w), hl, () => hl(-1));
+  $('#sang').onclick = (e) => { markDone('song:' + s.id); addStars(2, e.currentTarget); speak(pick(L[S.lang].praise)); e.currentTarget.disabled = true; };
+}
+
+function celebrate(msg, then) {
+  const app = $('#app');
+  app.innerHTML = `<div class="stage" style="margin-top:8vh">
+    <div class="big-e">${L[S.lang].mascot}</div>
+    <h2>${esc(msg)}</h2>
+    <p class="word">${pick(L[S.lang].praise)}</p>
+    <p class="en">★ ${P.stars} stars · ${P.stickers} sticker${P.stickers === 1 ? '' : 's'}</p>
+    <div class="btns"><button class="btn primary" id="cont">Keep playing ▶</button></div></div>`;
+  speak(pick(L[S.lang].praise));
+  const r = $('.big-e').getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, ['⭐', '🎉', '✨', L[S.lang].mascot]);
+  $('#cont').onclick = then;
+}
+
+function stickersScreen() {
+  return `${topbar('🏅 My Stickers')}
+  <p>Every 5 stars earns a new sticker. You have <b>${P.stars}</b> stars and <b>${P.stickers}</b> of ${STICKERS.length} stickers.</p>
+  <div class="stickers">${STICKERS.map((s, k) => `<div class="sticker ${k < P.stickers ? 'got' : 'no'}">${k < P.stickers ? s : '?'}</div>`).join('')}</div>`;
+}
+
+function guideScreen() {
+  const methods = [
+    ['🤸', 'Total Physical Response (TPR)', 'Children hear a command and answer with their body before they are asked to speak. Movement plus language builds understanding quickly and keeps young kids engaged (Asher, 1969).', 'In the app: “Move!” game and the “Do it” button in every topic.'],
+    ['👂', 'Lots of understandable input', 'Language grows from hearing messages a child can understand from pictures and context, a little above their current level (Krashen’s input hypothesis). Silence at first is normal: understanding comes before speaking.', 'In the app: Look & Listen, Stories, the pictures on every card.'],
+    ['👪', 'A real person playing along', 'Young children learn speech sounds far better from a live, responsive person than from a screen alone (Kuhl, Tsao & Liu, 2003). The app is a shared game, not a babysitter.', 'Sit together, repeat words, make the animal noises, swap roles.'],
+    ['🔁', 'Spaced repetition', 'Words come back after 1, 2, 4, 7 and 14 days. Reviewing just before forgetting makes memories last much longer than cramming (Cepeda et al., 2006).', 'In the app: “Today’s warm-up” brings back the words that are due.'],
+    ['🗣️', 'Retrieval and speaking practice', 'Trying to recall and say a word strengthens memory more than hearing it again (the testing effect). Keep it playful and never correct harshly. Just repeat the word back the right way.', 'In the app: “I said it!”, Find-it games, Memory.'],
+    ['🎵', 'Songs, rhythm and chants', 'Melody and rhythm help children segment and remember phrases. Familiar tunes lower the effort so attention goes to the new words.', 'In the app: three action songs on familiar tunes.'],
+    ['🎨', 'A clear context for each language', 'Bilingual families often keep languages apart by person, place or time (“one parent, one language”, or Spanish at breakfast, Macedonian at bedtime). Children handle two or three languages well when each has its own routine.', 'In the app: Macedonian is the orange sun world, Spanish is the teal sea world.'],
+    ['⭐', 'Short, happy, daily', 'Frequent short sessions beat rare long ones for 5-year-olds. Stop while it is still fun. Praise effort, not perfection.', 'In the app: stars, stickers, about 15 minutes a day.'],
+  ];
+  const plan = [
+    ['1–2', 'Hello & Manners, Move!', 'Greet and say goodbye in the new language every day. Play the Move game daily.'],
+    ['3–4', 'Colors, Numbers', '“I spy” with colours; count stairs, snacks and jumps.'],
+    ['5–6', 'Animals, Story: The Little Cat', 'Animal sounds, farm toys, re-read the story every night this fortnight.'],
+    ['7–8', 'Family, Food, Story: Breakfast', 'Name family in photos; offer food choices at meals in the new language.'],
+    ['9–10', 'My Body, Feelings, all Songs', 'Sing Head-Shoulders daily; share feelings at bedtime.'],
+    ['11+', 'Review and real-life use', 'Keep the daily warm-up. Add picture books, cartoons and video calls with Macedonian- or Spanish-speaking family or friends.'],
+  ];
+  return `${topbar('👪 For grown-ups')}
+  <div class="guide">
+    <div><h2>How this course works</h2>
+    <p>Zdravo &amp; Hola teaches an English-speaking 5-year-old everyday Macedonian and Spanish through pictures, listening, movement, stories and songs. Each part uses a method that research on early second-language learning supports. Here is what they are and where you will find them.</p></div>
+    ${methods.map(([e, t, d, wh]) => `<div class="method"><span class="e">${e}</span><div><h3>${t}</h3><p>${d}</p><p class="where">${wh}</p></div></div>`).join('')}
+  </div>
+  <div class="guide">
+    <div><h2>A 15-minute daily routine</h2></div>
+    <ol>
+      <li><b>2 min · Hello song.</b> Same song, same time every day, so it becomes a ritual.</li>
+      <li><b>3 min · Today’s warm-up.</b> Spaced review of words from earlier days.</li>
+      <li><b>5 min · One topic.</b> Look &amp; Listen, then Find it or Memory.</li>
+      <li><b>3 min · Move game.</b> Then let your child give <i>you</i> the commands.</li>
+      <li><b>2 min · Story or bedtime phrase.</b> “Добра ноќ” or “Buenas noches” with a hug.</li>
+    </ol>
+    <p>Many families do one language per day (for example Macedonian Mon/Wed/Fri, Spanish Tue/Thu/Sat), or one per routine. Pick what fits and keep it consistent.</p>
+  </div>
+  <div class="guide">
+    <h2>A 10-week path</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>Weeks</th><th>Topics in the app</th><th>Off-screen play</th></tr></thead>
+    <tbody>${plan.map(([a, b, c]) => `<tr><td class="wk">${a}</td><td>${b}</td><td>${c}</td></tr>`).join('')}</tbody></table></div>
+  </div>
+  <div class="guide">
+    <h2>An honest note on fluency</h2>
+    <p>Children reach real fluency through a lot of meaningful contact with a language over months and years, ideally with people who speak it. This app gives your child a joyful start: a core vocabulary, good listening habits, confidence and a love of both languages. To keep growing, add native-speaker time (grandparents, playdates, video calls, a weekend class), picture books, and cartoons in Macedonian or Spanish.</p>
+    <p><b>Voices:</b> the app uses your device’s built-in speech. Spanish voices are widely available. Macedonian voices are rare, so a Serbian or Bulgarian voice may stand in; when that happens, trust the “say:” helper spelling and your own voice, or a Macedonian-speaking relative’s.</p>
+    <label class="switch"><input type="checkbox" id="engToggle" ${P.english ? 'checked' : ''}> Show English helper words for grown-ups</label>
+    <div class="btns" style="justify-content:flex-start"><button class="btn" id="reset">Reset progress on this device</button><span id="resetAsk" hidden><button class="btn primary" id="resetYes">Yes, reset stars and words</button></span></div>
+  </div>
+  <div class="guide refs">
+    <h3>Further reading</h3>
+    <ul>
+      <li>Asher, J. (1969). The Total Physical Response approach to second language learning. <i>Modern Language Journal</i>, 53(1).</li>
+      <li>Krashen, S. (1982). <i>Principles and Practice in Second Language Acquisition</i>.</li>
+      <li>Kuhl, P., Tsao, F.-M., &amp; Liu, H.-M. (2003). Foreign-language experience in infancy. <i>PNAS</i>, 100(15). <a href="https://www.pnas.org/doi/10.1073/pnas.1532872100" target="_blank" rel="noopener">pnas.org</a></li>
+      <li>Cepeda, N. et al. (2006). Distributed practice in verbal recall tasks. <i>Psychological Bulletin</i>, 132(3).</li>
+      <li>Roediger, H. &amp; Karpicke, J. (2006). Test-enhanced learning. <i>Psychological Science</i>, 17(3).</li>
+      <li>Byers-Heinlein, K. &amp; Lew-Williams, C. (2013). Bilingualism in the early years: what the science says. <i>LEARNing Landscapes</i>, 7(1).</li>
+    </ul>
+  </div>`;
+}
+
+function bindGo(root) {
+  root.querySelectorAll('[data-go]').forEach((b) => b.onclick = () => go(b.dataset.go, b.dataset.arg));
+  root.querySelectorAll('[data-lang]').forEach((b) => b.onclick = () => setLang(b.dataset.lang));
+}
+
+function render() {
+  document.body.classList.toggle('es', S.lang === 'es');
+  const app = $('#app');
+  const a = S.arg;
+  switch (S.screen) {
+    case 'unit': app.innerHTML = unitScreen(a); break;
+    case 'learn': return learnScreen(a);
+    case 'find': return findScreen(a);
+    case 'match': return matchScreen(a);
+    case 'tpr': return tprScreen(a);
+    case 'review': return reviewScreen();
+    case 'story': return storyScreen(a);
+    case 'song': return songScreen(a);
+    case 'stickers': app.innerHTML = stickersScreen(); break;
+    case 'guide':
+      app.innerHTML = guideScreen();
+      $('#engToggle').onchange = (e) => { P.english = e.target.checked; save(); };
+      $('#reset').onclick = () => { $('#resetAsk').hidden = false; };
+      $('#resetYes').onclick = () => { P = { stars: 0, stickers: 0, srs: {}, done: {}, english: P.english, lang: S.lang }; save(); toast('Progress reset on this device.'); go('home'); };
+      break;
+    default: app.innerHTML = homeScreen();
+  }
+  bindGo(app);
+}
+render();
+</script>
