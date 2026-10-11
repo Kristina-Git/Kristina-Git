@@ -1,6 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Zdravo &amp; Hola</title>
+<meta name="description" content="Macedonian and Spanish for little explorers: picture cards, games, action commands, stories and songs.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#D9481F">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Zdravo Hola">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&family=Nunito:wght@400;600;800&display=swap">
@@ -43,9 +55,13 @@
 }
 body.es { --lang: var(--es); --lang-soft: var(--es-soft); }
 html, body { min-height: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
 body {
   background: var(--bg); color: var(--ink);
   font-family: var(--font-body); font-size: 17px; line-height: 1.5;
+  margin: 0;
   -webkit-tap-highlight-color: transparent;
   transition: background-color .4s;
 }
@@ -192,7 +208,8 @@ td.wk { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-num
   *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
 </style>
-
+</head>
+<body>
 <div class="wrap" id="app" aria-live="polite"></div>
 <div class="toast" id="toast" hidden></div>
 
@@ -468,6 +485,7 @@ function header() {
     <div class="pills">
       <span class="pill star" title="Stars">★ <span class="t" id="starCount">${P.stars}</span></span>
       <button class="pill" data-go="stickers">🏅 Stickers</button>
+      <button class="pill" id="installBtn" ${installEvt ? '' : 'hidden'}>📲 Install app</button>
       <button class="pill" data-go="guide">👪 Grown-ups</button>
     </div></div>`;
 }
@@ -793,6 +811,16 @@ function guideScreen() {
     </ol>
     <p>Many families do one language per day (for example Macedonian Mon/Wed/Fri, Spanish Tue/Thu/Sat), or one per routine. Pick what fits and keep it consistent.</p>
   </div>
+  <div class="guide" id="install">
+    <h2>Put the app on your home screen</h2>
+    <p>Once installed, Zdravo &amp; Hola opens full-screen with its own icon and works without internet.</p>
+    <ul>
+      <li><b>Android (Chrome):</b> tap “📲 Install app” at the top, or the ⋮ menu → <i>Install app</i> / <i>Add to Home screen</i>.</li>
+      <li><b>iPhone or iPad (Safari):</b> tap the Share button → <i>Add to Home Screen</i> → <i>Add</i>.</li>
+      <li><b>Computer (Chrome or Edge):</b> click the install icon at the right end of the address bar.</li>
+    </ul>
+    <p>Stars and stickers are saved on the device. Voices come from the device too, so most of them work offline.</p>
+  </div>
   <div class="guide">
     <h2>A 10-week path</h2>
     <div class="tbl-wrap"><table><thead><tr><th>Weeks</th><th>Topics in the app</th><th>Off-screen play</th></tr></thead>
@@ -818,7 +846,22 @@ function guideScreen() {
   </div>`;
 }
 
+/* ---------------- Install as an app ---------------- */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; const b = $('#installBtn'); if (b) b.hidden = false; });
+window.addEventListener('appinstalled', () => { installEvt = null; toast('Installed! Find Zdravo & Hola on your home screen.'); render(); });
+async function install() {
+  if (!installEvt) { go('guide'); setTimeout(() => $('#install') && $('#install').scrollIntoView(), 50); return; }
+  installEvt.prompt();
+  try { await installEvt.userChoice; } catch (e) {}
+  installEvt = null; render();
+}
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
 function bindGo(root) {
+  const ib = $('#installBtn', root); if (ib) ib.onclick = install;
   root.querySelectorAll('[data-go]').forEach((b) => b.onclick = () => go(b.dataset.go, b.dataset.arg));
   root.querySelectorAll('[data-lang]').forEach((b) => b.onclick = () => setLang(b.dataset.lang));
 }
@@ -849,3 +892,5 @@ function render() {
 }
 render();
 </script>
+</body>
+</html>

@@ -5,6 +5,25 @@ and **Spanish**. It is one self-contained web page: open `index.html` in any mod
 (Chrome, Edge, Safari) on a tablet, phone or computer. No install, no account, and nothing
 leaves the device. Stars and progress are saved in that browser.
 
+## Install it as an app
+
+Zdravo & Hola is an installable web app (PWA): it gets its own home-screen icon, opens
+full-screen, and works offline after the first visit.
+
+**1. Put it online (one-time, free, with GitHub Pages)**
+In the repository on GitHub: **Settings → Pages → Build and deployment**, set **Source** to
+*Deploy from a branch*, pick the branch that holds this folder and **/ (root)**, then **Save**.
+After a minute or two the app is live at:
+
+`https://kristina-git.github.io/Kristina-Git/kids-language-course/`
+
+**2. Install it on each device**
+- **Android (Chrome):** open the link, tap **📲 Install app** (or ⋮ → *Install app*).
+- **iPhone / iPad (Safari):** open the link, tap **Share → Add to Home Screen → Add**.
+- **Computer (Chrome / Edge):** open the link, click the install icon in the address bar.
+
+When you change the app files, bump `VERSION` in `sw.js` so installed copies update.
+
 ## What's inside
 
 | Part | What the child does | Method behind it |
