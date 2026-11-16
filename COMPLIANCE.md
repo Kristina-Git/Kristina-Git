@@ -164,6 +164,36 @@ This is a confirmation *mechanism*, not a substitute for actually agreeing fees 
 clients in the first place, and it doesn't validate that the percentage a compliance officer
 enters is itself correct — that's still a human judgment call before requesting confirmation.
 
+### 11. Hosting location and data residency
+
+This system (as deployed per `DEPLOYMENT.md`) runs on Railway's infrastructure, which is
+typically US-based, not physically located in the Cayman Islands.
+
+**Why that's acceptable, per CIMA's own published guidance:** CIMA does not require regulated
+entities' records to be physically stored within the Cayman Islands. Records (including
+electronic/cloud-held ones, which CIMA's guidance treats the same as paper records) may be kept
+elsewhere, provided:
+
+- The regulated entity remains responsible for record-keeping and accessibility even when a
+  third party (here, Railway/its underlying cloud infrastructure) stores the data.
+- CIMA can obtain the records within **1–3 business days** of a request. This system supports
+  that directly — the audit trail (`GET /audit`, with CSV export) and order/trade exports
+  (`GET /orders/export.csv`) can produce a complete, verifiable record set on demand.
+- Records aren't held somewhere whose own confidentiality/data-protection laws would restrict
+  or delay CIMA's access to them.
+
+**Separately — not a CIMA record-keeping matter, but still applicable:** the Cayman Islands
+**Data Protection Act** governs personal data generally (in spirit similar to GDPR) and
+requires notifying the Data Protection Ombudsman **within 5 days** of a data breach. This
+system does not currently implement any automated breach-detection or notification tooling —
+that's a firm process/policy matter (who gets alerted, who makes the notification, what counts
+as a reportable breach), not something software can satisfy on its own.
+
+**What to confirm directly with counsel, not from this document:** whether your specific
+licence type carries different or additional location/access conditions than the general
+guidance above, and whether your firm has (or needs) a documented breach-notification
+procedure referencing this system.
+
 ## What this system does *not* do
 
 - It does not perform KYC/CDD, sanctions/PEP screening, or ongoing AML transaction monitoring
@@ -177,15 +207,19 @@ enters is itself correct — that's still a human judgment call before requestin
   security review, separately from this document.
 - Passwords use `bcryptjs`. MFA is implemented (see §7) but **opt-in, not enforced** — deciding
   to make it mandatory for privileged roles, and building that enforcement, is still open.
+- It does not detect or notify anyone of data breaches automatically — the Cayman Data
+  Protection Act's 5-day Ombudsman notification requirement (see §11) is a firm process this
+  system doesn't attempt to automate.
 
 ## Before relying on this in production
 
 1. Have Cayman Islands counsel confirm which CIMA regime(s) apply to your licence and what
-   your actual record-keeping, reporting, and AML obligations are.
+   your actual record-keeping, reporting, and AML obligations are — including whether your
+   licence has location/access conditions beyond the general guidance summarized in §11.
 2. Replace the default retention period, compliance threshold, and role model with your firm's
    actual policies and procedures.
 3. Integrate real KYC/CDD and sanctions screening.
 4. Run this through your own security review (the repo includes a `security-review` workflow
    you can run against the codebase) before handling real client data or real orders.
-5. Migrate from SQLite to a production database (PostgreSQL) with proper backup, encryption at
-   rest, and access controls.
+5. Confirm backups are enabled on your hosting provider's database (e.g. Railway's managed
+   Postgres), and have a documented data-breach notification procedure in place.
